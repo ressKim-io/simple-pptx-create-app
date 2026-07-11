@@ -85,16 +85,12 @@ button:disabled{opacity:.4;cursor:default;pointer-events:none}
 .pv-count{font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap}
 .pv-count b{color:var(--ink)}
 .stage{flex:1;display:flex;align-items:center;justify-content:center;padding:8px 26px 10px;min-height:0;overflow:hidden;container-type:size;position:relative}
-.overflow-pill{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:3;display:flex;align-items:center;gap:8px;max-width:92%;padding:8px 15px;border-radius:999px;background:var(--warn);color:#fff;font-size:12.5px;font-weight:700;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.18);animation:fadein .25s ease}
-.overflow-pill svg{flex:none}
 .slide{max-width:96%;background:var(--slideBg);color:var(--slideInk);font-family:var(--slideFont);border-radius:16px;box-shadow:var(--shadow),inset 0 0 0 2px transparent;overflow:hidden;position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6% 7%;transition:box-shadow .25s;container-type:size}
-.slide.warn{box-shadow:var(--shadow),inset 0 0 0 2px var(--warn)}
 .slide-bg{position:absolute;inset:0;z-index:0}
 .slide-overlay{position:absolute;inset:0;z-index:0}
 .slide-empty{position:relative;z-index:1;font-size:3.4cqw;color:var(--slideMuted);font-weight:500}
-.lyrics{position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center;align-items:center;width:100%;font-weight:var(--slideWeight);line-height:1.5;letter-spacing:-0.01em;text-wrap:balance}
+.lyrics{position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center;align-items:center;width:100%;font-weight:var(--slideWeight);line-height:1.5;text-wrap:balance}
 .lyrics>div{width:100%}
-.bottom-fade{position:absolute;left:0;right:0;bottom:0;height:16%;pointer-events:none;z-index:1;background:linear-gradient(to top,var(--slideBg),transparent)}
 .slide-num{position:absolute;top:16px;right:20px;z-index:1;font-size:13px;font-weight:700;color:var(--slideMuted);font-family:Pretendard,sans-serif}
 
 /* 썸네일 스트립 */
@@ -106,7 +102,6 @@ button:disabled{opacity:.4;cursor:default;pointer-events:none}
 .thumb-l1{max-width:100%;font-size:11.5px;font-weight:700;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .thumb-l1.muted-line{color:var(--slideMuted)}
 .thumb-l2{max-width:100%;font-size:9.5px;color:var(--slideMuted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.thumb-warn{position:absolute;bottom:5px;right:7px;width:16px;height:16px;border-radius:50%;background:var(--warn);color:#fff;display:flex;align-items:center;justify-content:center;font-family:Pretendard,sans-serif;font-size:11px;font-weight:800}
 .thumb-hint{flex:none;display:flex;align-items:center;gap:7px;padding:0 14px 0 6px;color:var(--faint);font-size:11.5px;font-weight:600;white-space:nowrap;line-height:1.3}
 
 /* 오른쪽: 꾸미기 */
@@ -151,9 +146,23 @@ button:disabled{opacity:.4;cursor:default;pointer-events:none}
 .scale-row{display:flex;align-items:center;gap:10px}
 .scale-btn{width:52px;height:52px;flex:none;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--ink);font-size:26px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
 .scale-btn:hover{background:var(--accentSoft)}
-.scale-pct{flex:1;text-align:center;font-size:17px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.px-wrap{flex:1;display:flex;align-items:baseline;justify-content:center;gap:3px}
+.px-input{width:66px;text-align:right;font-size:17px;font-weight:800;color:var(--ink);background:transparent;border:none;outline:none;font-variant-numeric:tabular-nums;font-family:inherit;border-bottom:2px solid transparent;transition:border-color .15s;-moz-appearance:textfield;appearance:textfield}
+.px-input:focus{border-bottom-color:var(--accent)}
+.px-input::-webkit-outer-spin-button,.px-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.px-unit{font-size:13px;font-weight:700;color:var(--muted)}
+.slider-row{display:flex;align-items:center;gap:12px}
+.slider-row input[type=range]{flex:1;accent-color:var(--accent);height:26px;cursor:pointer;margin:0}
+.slider-val{width:56px;text-align:right;font-size:14px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
 .scale-note{margin-top:8px;font-size:11.5px;color:var(--faint);line-height:1.5}
-.scale-note b{color:var(--warn)}
+.custom-font-box{margin-top:10px;padding:12px;border-radius:11px;border:2px solid var(--border);background:var(--surface2);display:flex;flex-direction:column;gap:8px;transition:border-color .15s,background .15s}
+.custom-font-box.sel{border-color:var(--accent);background:var(--accentSoft)}
+.custom-font-box .sec-subtitle{margin-bottom:0}
+.cf-select,.cf-input{width:100%;min-height:38px;padding:0 10px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--ink);font-size:13px;font-family:inherit;outline:none;transition:border-color .15s}
+.cf-select:focus,.cf-input:focus{border-color:var(--accent)}
+.cf-load-btn{width:100%;min-height:38px;border-radius:9px;border:1px dashed var(--border);background:transparent;color:var(--muted);font-size:12.5px;font-weight:700;cursor:pointer;transition:border-color .15s,color .15s}
+.cf-load-btn:hover{border-color:var(--accent);color:var(--accent)}
+.cf-note{font-size:11px;color:var(--faint);line-height:1.5}
 .right-foot{padding:15px 18px;font-size:12px;color:var(--faint);line-height:1.55}
 
 /* ---------- 내보내기 모달 ---------- */
@@ -250,16 +259,11 @@ button:disabled{opacity:.4;cursor:default;pointer-events:none}
       </div>
 
       <div class="stage">
-        <div id="overflowPill" class="overflow-pill" role="alert" hidden>
-          <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3z"></path><path d="M12 10v4"></path><path d="M12 17.5v.01"></path></svg>
-          내용이 화면보다 많아요 · 줄이거나 나눠 보세요
-        </div>
         <div id="slideEl" class="slide">
           <div id="slideBgImg" class="slide-bg" aria-hidden="true" hidden></div>
           <div id="slideOverlay" class="slide-overlay" aria-hidden="true" hidden></div>
           <div id="emptyMsg" class="slide-empty" hidden>가사를 입력하면 여기에 크게 보여요</div>
           <div id="lyricsBox" class="lyrics"></div>
-          <div id="bottomFade" class="bottom-fade" hidden></div>
           <div id="slideNum" class="slide-num" aria-hidden="true">1</div>
         </div>
       </div>
@@ -310,20 +314,55 @@ button:disabled{opacity:.4;cursor:default;pointer-events:none}
       <div class="sec">
         <div class="sec-title">글씨체</div>
         <div id="fontCol" class="font-col"></div>
+        <div id="customFontBox" class="custom-font-box">
+          <div class="sec-subtitle">내 컴퓨터 글꼴</div>
+          <select id="localFontSel" class="cf-select" aria-label="내 컴퓨터 글꼴 선택" hidden></select>
+          <button type="button" id="loadFontsBtn" class="cf-load-btn">글꼴 목록 불러오기</button>
+          <input type="text" id="customFontInput" class="cf-input" placeholder="글꼴 이름 직접 입력 후 Enter" aria-label="글꼴 이름 직접 입력">
+          <div class="cf-note">PPTX는 여는 컴퓨터에도 같은 글꼴이 있어야 그대로 보여요. PNG는 지금 화면 그대로 저장돼요.</div>
+        </div>
       </div>
 
       <div class="sec">
         <div class="scale-head">
           <div class="sec-title">글자 크기</div>
-          <span id="scaleDefault">기본</span>
-          <button type="button" id="scaleReset" class="link-btn" hidden>기본으로</button>
+          <span id="scaleDefault">자동</span>
+          <button type="button" id="scaleReset" class="link-btn" hidden>자동으로</button>
         </div>
         <div class="scale-row">
           <button type="button" id="shrinkBtn" class="scale-btn" aria-label="글자 작게">−</button>
-          <div id="scalePct" aria-live="polite" class="scale-pct">100%</div>
+          <div class="px-wrap">
+            <input id="pxInput" class="px-input" type="number" min="12" max="500" step="1" inputmode="numeric" aria-label="글자 크기(픽셀)">
+            <span class="px-unit">px</span>
+          </div>
           <button type="button" id="growBtn" class="scale-btn" aria-label="글자 크게">＋</button>
         </div>
-        <div class="scale-note">기본은 화면에 꽉 차게 자동 맞춤이에요. 더 키우면 넘치는 슬라이드는 <b>넘침 경고</b>가 떠요.</div>
+        <div class="scale-note">내보내기 화면(세로 1080px) 기준 픽셀 크기예요. 기본은 화면에 맞춘 자동 크기입니다.</div>
+      </div>
+
+      <div class="sec">
+        <div class="scale-head">
+          <div class="sec-title">자간</div>
+          <span id="trackDefault">기본</span>
+          <button type="button" id="trackReset" class="link-btn" hidden>기본으로</button>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="trackRange" min="-5" max="5" step="0.1" value="0" aria-label="자간(글자 크기 대비 퍼센트)">
+          <div id="trackVal" aria-live="polite" class="slider-val">0%</div>
+        </div>
+        <div class="scale-note">글자 사이 간격이에요. 글자 크기의 −5% ~ +5% 범위로 조절돼요.</div>
+      </div>
+
+      <div class="sec">
+        <div class="scale-head">
+          <div class="sec-title">줄 간격</div>
+          <span id="lineDefault">기본</span>
+          <button type="button" id="lineReset" class="link-btn" hidden>기본으로</button>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="lineRange" min="100" max="250" step="5" value="150" aria-label="줄 간격(퍼센트)">
+          <div id="lineVal" aria-live="polite" class="slider-val">150%</div>
+        </div>
       </div>
 
       <div class="right-foot">기본값만으로도 바로 슬라이드가 만들어져요. 마음에 안 들면 언제든 다시 바꾸면 됩니다.</div>
@@ -550,12 +589,14 @@ jszip/dist/jszip.min.js:
   var PV_ASPECT = { '16:9': '16 / 9', '4:3': '4 / 3', '1:1': '1 / 1' };
   // cqh를 cqw 단위로 환산한 값(높이÷너비)
   var RF = { '16:9': 0.5625, '4:3': 0.75, '1:1': 1 };
-  var MAX_SIZE = 9;    // cqw 상한
-  var LINE_H = 1.55;   // 넘침 계산용 안전 마진 (실제 표시는 1.5)
+  var MAX_SIZE = 9;    // cqw 상한 (자동 크기 계산용)
+  var LINE_H = 1.55;   // 자동 크기 계산용 안전 마진 (실제 표시 기본은 1.5)
   var REF_LINES = 4;   // 기본 크기 = "4줄 슬라이드가 꽉 차는" 크기
   var H_AVAIL = 84;    // 사용 가능한 가로폭(cqw)
   var REF_EM = 17;     // 기본 크기가 한 줄에 들어가야 하는 기준 폭(em)
-  var MIN_SCALE = 0.6, MAX_SCALE = 1.8, SCALE_STEP = 0.1;
+  var PX_MIN = 12, PX_MAX = 500, PX_STEP = 2;      // 글자 크기(내보내기 px 기준)
+  var TRACK_MIN = -5, TRACK_MAX = 5;               // 자간 (글자 크기 대비 %)
+  var LINE_MIN = 1.0, LINE_MAX = 2.5;              // 줄 간격 배수
 
   var DEFAULT_TEXT = [
     '동해 물과 백두산이 마르고 닳도록',
@@ -598,7 +639,10 @@ jszip/dist/jszip.min.js:
     exportFmt: null, exportPct: 0,
     images: [],                    // 업로드 배경 [{id, name, url}] (IndexedDB 복원)
     overlayMode: 'dark',           // 'dark' = 어두운 스크림+흰 글자, 'light' = 반대
-    sizeScale: 1
+    fontPx: null,                  // 글자 크기(px, 내보내기 기준). null = 자동 맞춤
+    letterSpacing: 0,              // 자간: 글자 크기 대비 % (-5 ~ +5, 0.1 단위)
+    lineHeight: 1.5,               // 줄 간격 배수 (1.0 ~ 2.5)
+    customFont: ''                 // 내 컴퓨터 글꼴 이름 (fontKey === 'custom'일 때 사용)
   };
   var presets = [];                // presets.json: [{key, name, data(dataURL)}]
   var bgCache = {};                // src -> HTMLImageElement
@@ -677,32 +721,28 @@ jszip/dist/jszip.min.js:
     return slides.map(function (lines) { return { lines: lines }; });
   }
 
-  /* ---------- 크기/넘침 휴리스틱 (미리보기와 내보내기가 같은 수치 사용) ---------- */
-  function emWidth(str) {
-    var w = 0;
-    for (var i = 0; i < str.length; i++) {
-      var ch = str[i];
-      if (ch === ' ') w += 0.35;
-      else if (ch.charCodeAt(0) < 128) w += 0.56;
-      else w += 1.0;               // 전각(한글/CJK)
-    }
-    return w;
-  }
-  // 비율당 고정 폰트 크기(cqw) — 모든 슬라이드 동일
+  /* ---------- 글자 크기 (미리보기와 내보내기가 같은 수치 사용) ---------- */
+  // 비율당 자동 폰트 크기(cqw) — "4줄이 꽉 차는" 기본값
   function fixedSize(ratio) {
     var vFill = (88 * RF[ratio]) / (REF_LINES * LINE_H);
     var hFit = H_AVAIL / REF_EM;
     return Math.min(MAX_SIZE, vFill, hFit);
   }
-  function overflowOf(s, ratio, scale) {
-    var L = s.lines.length;
-    if (!L) return false;
-    var S = fixedSize(ratio) * (scale || 1);
-    var vAvail = 88 * RF[ratio];
-    var vNeed = L * S * LINE_H;
-    var maxEm = s.lines.reduce(function (m, l) { return Math.max(m, emWidth(l)); }, 0);
-    var hNeed = maxEm * S;
-    return vNeed > vAvail * 1.02 || hNeed > H_AVAIL;
+  // 자동 크기를 내보내기 px(세로 1080px 캔버스 기준)로 환산
+  function autoPx() {
+    return Math.round(RATIOS[state.ratio].w * fixedSize(state.ratio) / 100);
+  }
+  // 현재 적용 글자 크기(px). fontPx 미설정이면 자동값
+  function curPx() {
+    return state.fontPx || autoPx();
+  }
+  // 현재 글꼴 정보 (프리셋 또는 내 컴퓨터 글꼴)
+  function curFont() {
+    if (state.fontKey === 'custom' && state.customFont) {
+      var name = state.customFont.replace(/["\\]/g, '');
+      return { label: name, cssName: '"' + name + '"', weight: 600, fb: FB, pptx: name, pptxBold: false };
+    }
+    return FONTS[state.fontKey] || FONTS.gothic;
   }
 
   /* ---------- 배경 해석 ---------- */
@@ -746,7 +786,7 @@ jszip/dist/jszip.min.js:
           ? { bg: '#F2F0EA', ink: '#1B1D20', muted: 'rgba(20,22,26,.72)' }
           : { bg: '#1A1D22', ink: '#FFFFFF', muted: 'rgba(255,255,255,.82)' })
       : (BGS[state.bgKey] || BGS.white);
-    var f = FONTS[state.fontKey];
+    var f = curFont();
     return {
       '--accent': state.accent,
       '--accentInk': '#FFFFFF',
@@ -804,8 +844,8 @@ jszip/dist/jszip.min.js:
     slideEl.style.width = PVW[state.ratio];
     slideEl.style.aspectRatio = PV_ASPECT[state.ratio];
 
-    var curOverflow = overflowOf(cur, state.ratio, state.sizeScale);
-    var lyricSize = fixedSize(state.ratio) * state.sizeScale;
+    // 미리보기 cqw = 내보내기 px ÷ 내보내기 가로폭 × 100 (미리보기와 파일이 동일 비율)
+    var lyricSize = curPx() / RATIOS[state.ratio].w * 100;
 
     $('slideBgImg').hidden = !imgOn;
     $('slideOverlay').hidden = !imgOn;
@@ -825,13 +865,12 @@ jszip/dist/jszip.min.js:
       box.appendChild(d);
     });
     box.style.fontSize = lyricSize + 'cqw';
+    box.style.letterSpacing = (state.letterSpacing / 100) + 'em';
+    box.style.lineHeight = String(state.lineHeight);
     box.style.textShadow = imgOn
       ? (lightMode ? '0 1px 8px rgba(255,255,255,.55)' : '0 2px 12px rgba(0,0,0,.55)')
       : 'none';
 
-    $('overflowPill').hidden = !curOverflow;
-    $('bottomFade').hidden = !(curOverflow && !imgOn);
-    slideEl.classList.toggle('warn', curOverflow);
     $('slideNum').textContent = state.active + 1;
     $('activeNum').textContent = state.active + 1;
     $('totalNum').textContent = slides.length;
@@ -844,12 +883,11 @@ jszip/dist/jszip.min.js:
     var wrap = $('thumbs');
     wrap.textContent = '';
     slides.forEach(function (s, i) {
-      var over = overflowOf(s, state.ratio, state.sizeScale);
       var b = document.createElement('button');
       b.type = 'button'; b.className = 'thumb' + (i === state.active ? ' sel' : '');
       b.setAttribute('role', 'tab');
       b.setAttribute('aria-selected', i === state.active ? 'true' : 'false');
-      b.setAttribute('aria-label', '슬라이드 ' + (i + 1) + (over ? ' (내용 넘침)' : ''));
+      b.setAttribute('aria-label', '슬라이드 ' + (i + 1));
       b.style.background = thumbBg;
       var num = document.createElement('div');
       num.className = 'thumb-num'; num.setAttribute('aria-hidden', 'true');
@@ -861,12 +899,6 @@ jszip/dist/jszip.min.js:
       l2.className = 'thumb-l2';
       l2.textContent = s.lines[1] || '';
       b.appendChild(num); b.appendChild(l1); b.appendChild(l2);
-      if (over) {
-        var w = document.createElement('span');
-        w.className = 'thumb-warn'; w.setAttribute('aria-label', '내용 넘침');
-        w.textContent = '!';
-        b.appendChild(w);
-      }
       b.addEventListener('click', function () { state.active = i; render(); });
       wrap.appendChild(b);
     });
@@ -889,12 +921,38 @@ jszip/dist/jszip.min.js:
     selToggle($('overlayGroup'), '.seg-btn', 'mode', state.overlayMode);
     selToggle($('accentRow'), '.accent-dot', 'color', state.accent);
     selToggle($('fontCol'), '.font-opt', 'font', state.fontKey);
-    $('scalePct').textContent = Math.round(state.sizeScale * 100) + '%';
-    $('growBtn').disabled = state.sizeScale >= MAX_SCALE - 1e-9;
-    $('shrinkBtn').disabled = state.sizeScale <= MIN_SCALE + 1e-9;
-    var isDefault = Math.abs(state.sizeScale - 1) < 0.001;
-    $('scaleDefault').hidden = !isDefault;
-    $('scaleReset').hidden = isDefault;
+
+    // 글자 크기 (px)
+    var px = curPx();
+    var pxInput = $('pxInput');
+    if (document.activeElement !== pxInput) pxInput.value = px;
+    $('growBtn').disabled = px >= PX_MAX;
+    $('shrinkBtn').disabled = px <= PX_MIN;
+    var isAuto = state.fontPx === null;
+    $('scaleDefault').hidden = !isAuto;
+    $('scaleReset').hidden = isAuto;
+
+    // 자간
+    $('trackRange').value = state.letterSpacing;
+    $('trackVal').textContent = (state.letterSpacing > 0 ? '+' : '') + state.letterSpacing.toFixed(1) + '%';
+    var trackDef = Math.abs(state.letterSpacing) < 0.05;
+    $('trackDefault').hidden = !trackDef;
+    $('trackReset').hidden = trackDef;
+
+    // 줄 간격
+    var lhPct = Math.round(state.lineHeight * 100);
+    $('lineRange').value = lhPct;
+    $('lineVal').textContent = lhPct + '%';
+    $('lineDefault').hidden = lhPct !== 150;
+    $('lineReset').hidden = lhPct === 150;
+
+    // 내 컴퓨터 글꼴
+    var isCustom = state.fontKey === 'custom';
+    $('customFontBox').classList.toggle('sel', isCustom);
+    var cfi = $('customFontInput');
+    if (document.activeElement !== cfi) cfi.value = isCustom ? state.customFont : '';
+    var sel = $('localFontSel');
+    if (!sel.hidden) sel.value = isCustom ? state.customFont : '';
   }
 
   function renderImgChips() {
@@ -1076,8 +1134,8 @@ jszip/dist/jszip.min.js:
   }
 
   /* ---------- 웹폰트 사전 로드 (캔버스가 대체 글꼴로 그리는 것 방지) ---------- */
-  function ensureFont(fontKey) {
-    var f = FONTS[fontKey];
+  function ensureFont() {
+    var f = curFont();
     if (!f || !document.fonts) return Promise.resolve();
     var spec = f.weight + ' 100px ' + f.cssName;
     return Promise.race([
@@ -1108,10 +1166,6 @@ jszip/dist/jszip.min.js:
   function exportInk(imgOn) {
     if (imgOn) return state.overlayMode === 'light' ? '#1B1D20' : '#FFFFFF';
     return (BGS[state.bgKey] || BGS.white).ink;
-  }
-  // 미리보기 폰트 = S cqw (슬라이드 너비의 S%) → 픽셀 = W × S / 100
-  function exportFontPx(W) {
-    return W * fixedSize(state.ratio) * state.sizeScale / 100;
   }
   // 캔버스는 자동 줄바꿈이 없어서 직접 랩핑 (DOM 미리보기·PPTX와 일관)
   function wrapLine(ctx, text, maxW) {
@@ -1146,10 +1200,12 @@ jszip/dist/jszip.min.js:
       ctx.fillStyle = (BGS[state.bgKey] || BGS.white).bg;
       ctx.fillRect(0, 0, W, H);
     }
-    var f = FONTS[state.fontKey];
-    var px = exportFontPx(W);
-    var lh = px * 1.5;
+    var f = curFont();
+    var px = curPx();
+    var lh = px * state.lineHeight;
     ctx.font = f.weight + ' ' + px + 'px ' + f.cssName + f.fb;
+    // 자간: Chromium 계열이면 캔버스에도 그대로 적용 (미지원 브라우저는 무시)
+    if ('letterSpacing' in ctx) ctx.letterSpacing = (px * state.letterSpacing / 100) + 'px';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = exportInk(!!bgImg);
@@ -1217,7 +1273,7 @@ jszip/dist/jszip.min.js:
   }
 
   async function exportPNG(slides) {
-    await ensureFont(state.fontKey);
+    await ensureFont();
     var bg = await getBgImage();
     var R = RATIOS[state.ratio];
     var cv = document.createElement('canvas');
@@ -1247,10 +1303,10 @@ jszip/dist/jszip.min.js:
   }
 
   async function exportPPTX(slides) {
-    await ensureFont(state.fontKey);
+    await ensureFont();
     var bg = await getBgImage();
     var R = RATIOS[state.ratio];
-    var f = FONTS[state.fontKey];
+    var f = curFont();
     var pptx = new PptxGenJS();
     pptx.defineLayout({ name: 'CH', width: R.inW, height: R.inH });
     pptx.layout = 'CH';
@@ -1264,7 +1320,8 @@ jszip/dist/jszip.min.js:
       drawOverlay(ctx, R.w, R.h);
       bgData = cv.toDataURL('image/jpeg', 0.9);
     }
-    var fontPt = Math.round(exportFontPx(R.w) / 2);   // 1080px = 540pt → px/pt = 2
+    var fontPt = Math.round(curPx() / 2);   // 1080px = 540pt → px/pt = 2
+    var charSpc = Math.round(fontPt * state.letterSpacing / 100 * 100) / 100;  // 자간(pt)
     var ink = exportInk(!!bg);
     for (var i = 0; i < slides.length; i++) {
       var s = pptx.addSlide();
@@ -1275,8 +1332,9 @@ jszip/dist/jszip.min.js:
         align: 'center', valign: 'middle',
         fontFace: f.pptx, fontSize: fontPt, bold: f.pptxBold,
         color: hex6(ink),
-        lineSpacing: Math.round(fontPt * 1.5)
+        lineSpacing: Math.round(fontPt * state.lineHeight)
       };
+      if (charSpc) opts.charSpacing = charSpc;
       if (bgData && state.overlayMode !== 'light') {
         opts.shadow = { type: 'outer', color: '000000', opacity: 0.5, blur: 4, offset: 2, angle: 90 };
       }
@@ -1353,11 +1411,54 @@ jszip/dist/jszip.min.js:
   }
 
   /* ---------- 이벤트 바인딩 ---------- */
-  function bumpScale(dir) {
-    var v = Math.round((state.sizeScale + dir * SCALE_STEP) * 100) / 100;
-    state.sizeScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, v));
-    lsSet('sm_scale', String(state.sizeScale));
+  function setPx(v) {
+    v = Math.round(v);
+    if (isFinite(v)) {
+      state.fontPx = Math.max(PX_MIN, Math.min(PX_MAX, v));
+      lsSet('sm_fontPx', String(state.fontPx));
+    }
     render();
+    // 입력창이 포커스 중이어도 클램프/잘못된 입력을 실제 값으로 되돌려 표시
+    $('pxInput').value = curPx();
+  }
+  function applyCustomFont(name) {
+    name = (name || '').trim();
+    if (!name) return;
+    state.customFont = name;
+    state.fontKey = 'custom';
+    lsSet('sm_font', 'custom');
+    lsSet('sm_customFont', name);
+    render();
+  }
+  function loadLocalFonts() {
+    if (!window.queryLocalFonts) {
+      alert('이 브라우저는 글꼴 목록 불러오기를 지원하지 않아요. (Chrome/Edge에서 가능)\n아래 입력칸에 글꼴 이름을 직접 적어 주세요.');
+      return;
+    }
+    window.queryLocalFonts().then(function (fonts) {
+      var seen = {}, fams = [];
+      fonts.forEach(function (fo) {
+        if (fo.family && !seen[fo.family]) { seen[fo.family] = true; fams.push(fo.family); }
+      });
+      fams.sort(function (a, b) { return a.localeCompare(b, 'ko'); });
+      var sel = $('localFontSel');
+      sel.textContent = '';
+      var ph = document.createElement('option');
+      ph.value = ''; ph.textContent = '글꼴 선택… (' + fams.length + '개)';
+      sel.appendChild(ph);
+      fams.forEach(function (fam) {
+        var o = document.createElement('option');
+        o.value = fam;
+        o.textContent = fam;
+        o.style.fontFamily = '"' + fam.replace(/["\\]/g, '') + '"';
+        sel.appendChild(o);
+      });
+      sel.hidden = false;
+      $('loadFontsBtn').hidden = true;
+      if (state.fontKey === 'custom') sel.value = state.customFont;
+    }).catch(function (e) {
+      alert('글꼴 목록을 불러오지 못했어요: ' + (e && e.message ? e.message : e) + '\n아래 입력칸에 글꼴 이름을 직접 적어도 됩니다.');
+    });
   }
   function bindEvents() {
     $('lyricsTa').addEventListener('input', onEdit);
@@ -1373,10 +1474,40 @@ jszip/dist/jszip.min.js:
     $('nextBtn').addEventListener('click', function () { state.active++; render(); });
     $('bgFile').addEventListener('change', onUpload);
     $('copyPresetBtn').addEventListener('click', copyPresetCode);
-    $('growBtn').addEventListener('click', function () { bumpScale(1); });
-    $('shrinkBtn').addEventListener('click', function () { bumpScale(-1); });
+    $('growBtn').addEventListener('click', function () { setPx(curPx() + PX_STEP); });
+    $('shrinkBtn').addEventListener('click', function () { setPx(curPx() - PX_STEP); });
+    $('pxInput').addEventListener('change', function (e) { setPx(parseFloat(e.target.value)); });
     $('scaleReset').addEventListener('click', function () {
-      state.sizeScale = 1; lsSet('sm_scale', '1'); render();
+      state.fontPx = null; lsSet('sm_fontPx', ''); render();
+    });
+    $('trackRange').addEventListener('input', function (e) {
+      var v = parseFloat(e.target.value);
+      if (!isFinite(v)) return;
+      state.letterSpacing = Math.max(TRACK_MIN, Math.min(TRACK_MAX, Math.round(v * 10) / 10));
+      lsSet('sm_track', String(state.letterSpacing));
+      render();
+    });
+    $('trackReset').addEventListener('click', function () {
+      state.letterSpacing = 0; lsSet('sm_track', '0'); render();
+    });
+    $('lineRange').addEventListener('input', function (e) {
+      var v = parseFloat(e.target.value);
+      if (!isFinite(v)) return;
+      state.lineHeight = Math.max(LINE_MIN, Math.min(LINE_MAX, v / 100));
+      lsSet('sm_lineh', String(state.lineHeight));
+      render();
+    });
+    $('lineReset').addEventListener('click', function () {
+      state.lineHeight = 1.5; lsSet('sm_lineh', '1.5'); render();
+    });
+    $('loadFontsBtn').addEventListener('click', loadLocalFonts);
+    $('localFontSel').addEventListener('change', function (e) {
+      if (e.target.value) applyCustomFont(e.target.value);
+    });
+    $('customFontInput').addEventListener('change', function (e) {
+      var name = e.target.value.trim();
+      if (name) applyCustomFont(name);
+      else if (state.fontKey === 'custom') { state.fontKey = 'gothic'; lsSet('sm_font', 'gothic'); render(); }
     });
     $('exportModal').addEventListener('click', function (e) {
       if (e.target === $('exportModal')) closeExport();
@@ -1413,14 +1544,31 @@ jszip/dist/jszip.min.js:
 
     var ov = lsGet('sm_overlay');
     if (ov === 'dark' || ov === 'light') state.overlayMode = ov;
-    var sc = parseFloat(lsGet('sm_scale'));
-    if (sc >= MIN_SCALE && sc <= MAX_SCALE) state.sizeScale = sc;
     var rt = lsGet('sm_ratio');
     if (RATIOS[rt]) state.ratio = rt;
+
+    var fpx = parseFloat(lsGet('sm_fontPx'));
+    if (isFinite(fpx) && fpx >= PX_MIN && fpx <= PX_MAX) {
+      state.fontPx = Math.round(fpx);
+    } else {
+      // 예전 버전의 % 설정(sm_scale)이 있으면 px로 이관
+      var oldSc = parseFloat(lsGet('sm_scale'));
+      if (isFinite(oldSc) && Math.abs(oldSc - 1) > 0.001) {
+        state.fontPx = Math.max(PX_MIN, Math.min(PX_MAX, Math.round(autoPx() * oldSc)));
+        lsSet('sm_fontPx', String(state.fontPx));
+      }
+    }
+    var tr = parseFloat(lsGet('sm_track'));
+    if (isFinite(tr) && tr >= TRACK_MIN && tr <= TRACK_MAX) state.letterSpacing = Math.round(tr * 10) / 10;
+    var lh = parseFloat(lsGet('sm_lineh'));
+    if (isFinite(lh) && lh >= LINE_MIN && lh <= LINE_MAX) state.lineHeight = lh;
+
     var ac = lsGet('sm_accent');
     if (ACCENTS.some(function (a) { return a.color === ac; })) state.accent = ac;
+    var cf = lsGet('sm_customFont');
+    if (cf) state.customFont = cf;
     var fk = lsGet('sm_font');
-    if (FONTS[fk]) state.fontKey = fk;
+    if (FONTS[fk] || (fk === 'custom' && state.customFont)) state.fontKey = fk;
     state.dark = lsGet('sm_dark') === '1';
 
     $('lyricsTa').value = state.text;
