@@ -670,8 +670,10 @@ jszip/dist/jszip.min.js:
     fontPx: null,                  // 글자 크기(px, 내보내기 기준). null = 자동 맞춤
     letterSpacing: 0,              // 자간: 글자 크기 대비 % (-5 ~ +5, 0.1 단위)
     lineHeight: 1.5,               // 줄 간격 배수 (1.0 ~ 2.5)
-    customFont: ''                 // 내 컴퓨터 글꼴 이름 (fontKey === 'custom'일 때 사용)
+    customFont: '',                // 내 컴퓨터 글꼴 이름 (fontKey === 'custom'일 때 사용)
+    customFontMeta: null           // 목록에서 고른 face 정보 {label, css, weight, pptx, pptxBold, ps}
   };
+  var localFaces = {};             // postscriptName -> FontData (글꼴 목록 불러온 뒤)
   var presets = [];                // presets.json: [{key, name, data(dataURL)}]
   var bgCache = {};                // src -> HTMLImageElement
   var fontsLoaded = false;         // 내 컴퓨터 글꼴 목록을 불러왔는가
@@ -820,12 +822,109 @@ jszip/dist/jszip.min.js:
   // 커스텀 글꼴이 이 컴퓨터에 없으면 그 이름, 아니면 ''
   function missingFontName() {
     if (state.fontKey !== 'custom' || !state.customFont) return '';
+    if (state.customFontMeta) return '';   // 목록에서 고른 글꼴 — 설치돼 있음이 확실
     return fontInstalled(state.customFont) ? '' : state.customFont;
+  }
+
+  /* ---------- 글꼴 파일의 이름표(name table) 읽기 ----------
+     같은 글꼴이라도 프로그램마다 부르는 이름이 다르다:
+     - 브라우저(DirectWrite)는 nameID 16 "대표 가족명" — Light/Bold 를 하나로 묶은 이름
+     - 파워포인트(GDI)는 nameID 1 — 굵기별로 쪼개진 이름 (예: "Kim jung chul Gothic Light")
+     브라우저 목록의 이름을 그대로 pptx 에 적으면 파워포인트가 "없는 글꼴"로 취급하므로,
+     글꼴 파일에서 nameID 1 을 직접 꺼내 그 이름을 적어야 한다. */
+  function parseSfntNames(buf) {
+    var dv = new DataView(buf);
+    function tableAt(base) {
+      var num = dv.getUint16(base + 4);
+      for (var i = 0; i < num; i++) {
+        var o = base + 12 + i * 16;
+        var tag = String.fromCharCode(dv.getUint8(o), dv.getUint8(o + 1), dv.getUint8(o + 2), dv.getUint8(o + 3));
+        if (tag === 'name') return nameAt(dv.getUint32(o + 8));
+      }
+      return [];
+    }
+    function nameAt(off) {
+      var count = dv.getUint16(off + 2), strOff = off + dv.getUint16(off + 4), out = [];
+      for (var i = 0; i < count; i++) {
+        var r = off + 6 + i * 12;
+        var p = dv.getUint16(r), l = dv.getUint16(r + 4), id = dv.getUint16(r + 6);
+        var len = dv.getUint16(r + 8), so = strOff + dv.getUint16(r + 10), s = '';
+        if (so + len > dv.byteLength) continue;
+        if (p === 3 || p === 0) { for (var j = 0; j + 1 < len; j += 2) s += String.fromCharCode(dv.getUint16(so + j)); }
+        else { for (var k = 0; k < len; k++) s += String.fromCharCode(dv.getUint8(so + k)); }
+        if (s) out.push({ p: p, l: l, id: id, s: s });
+      }
+      return out;
+    }
+    if (dv.getUint32(0) === 0x74746366) {   // 'ttcf' — 한 파일에 글꼴 여러 개
+      var n = dv.getUint32(8), sets = [];
+      for (var i = 0; i < n && i < 64; i++) sets.push(tableAt(dv.getUint32(12 + i * 4)));
+      return sets;
+    }
+    return [tableAt(0)];
+  }
+  function nameFrom(recs, id) {
+    var c = recs.filter(function (r) { return r.id === id; });
+    if (!c.length) return '';
+    var hit =
+      c.find(function (r) { return r.p === 3 && r.l === 0x409; }) ||   // Windows 영어
+      c.find(function (r) { return r.p === 3 && r.l === 0x412; }) ||   // Windows 한국어
+      c.find(function (r) { return r.p === 3; }) ||
+      c[0];
+    return hit.s;
+  }
+  function fontWeightOf(style) {
+    var s = (style || '').toLowerCase();
+    if (/hairline|thin/.test(s)) return 100;
+    if (/extra\s*light|ultra\s*light/.test(s)) return 200;
+    if (/semi\s*light|light/.test(s)) return 300;
+    if (/medium/.test(s)) return 500;
+    if (/semi\s*bold|demi/.test(s)) return 600;
+    if (/extra\s*bold|ultra\s*bold/.test(s)) return 800;
+    if (/black|heavy/.test(s)) return 900;
+    if (/bold/.test(s)) return 700;
+    return 400;
+  }
+  // 목록에서 고른 글꼴 face → 미리보기용/pptx용 이름 세트
+  function resolveLocalFont(fd) {
+    var label = fd.fullName || (fd.family + (fd.style && fd.style !== 'Regular' ? ' ' + fd.style : ''));
+    var fallback = {
+      label: label, css: fd.family, weight: fontWeightOf(fd.style),
+      pptx: label, pptxBold: false, ps: fd.postscriptName || ''
+    };
+    if (!fd.blob) return Promise.resolve(fallback);
+    return fd.blob().then(function (b) { return b.arrayBuffer(); }).then(function (buf) {
+      var sets = parseSfntNames(buf);
+      var recs = sets[0] || [];
+      if (sets.length > 1) {   // TTC: postscript 이름이 일치하는 글꼴을 찾는다
+        for (var i = 0; i < sets.length; i++) {
+          if (nameFrom(sets[i], 6) === fd.postscriptName) { recs = sets[i]; break; }
+        }
+      }
+      var gdi = nameFrom(recs, 1);
+      if (!gdi) return fallback;
+      return {
+        label: nameFrom(recs, 4) || label,
+        css: fd.family,
+        weight: fontWeightOf(nameFrom(recs, 17) || fd.style),
+        pptx: gdi,
+        pptxBold: /bold/i.test(nameFrom(recs, 2)),
+        ps: fd.postscriptName || ''
+      };
+    }).catch(function () { return fallback; });
   }
 
   // 현재 글꼴 정보 (프리셋 또는 내 컴퓨터 글꼴)
   function curFont() {
     if (state.fontKey === 'custom' && state.customFont) {
+      var meta = state.customFontMeta;
+      if (meta) {
+        // 목록에서 고른 글꼴: 미리보기는 브라우저 가족명, pptx 는 파워포인트(GDI) 가족명
+        return {
+          label: meta.label, cssName: '"' + (meta.css || '').replace(/["\\]/g, '') + '"',
+          weight: meta.weight || 600, fb: FB, pptx: meta.pptx, pptxBold: !!meta.pptxBold
+        };
+      }
       var name = state.customFont.replace(/["\\]/g, '');
       return { label: name, cssName: '"' + name + '"', weight: 600, fb: FB, pptx: name, pptxBold: false };
     }
@@ -1051,7 +1150,7 @@ jszip/dist/jszip.min.js:
 
     if (document.activeElement !== cfi) cfi.value = isCustom ? state.customFont : '';
     if (listMode) {
-      sel.value = isCustom ? state.customFont : '';
+      sel.value = (isCustom && state.customFontMeta) ? state.customFontMeta.ps : '';
       // 목록에 없는 이름이면 selectedIndex 가 -1 이 되어 선택창이 빈칸으로 보인다 → 안내 문구로 되돌림
       if (sel.selectedIndex === -1) sel.selectedIndex = 0;
     }
@@ -1468,12 +1567,34 @@ jszip/dist/jszip.min.js:
       theme = theme.replace(/(<a:(?:major|minor)Font>)([\s\S]*?)(<\/a:(?:major|minor)Font>)/g,
         function (all, open, body, close) {
           body = body
-            .replace(/<a:latin\b[^>]*\/>/, '<a:latin typeface="' + font + '"/>')
-            .replace(/<a:ea\b[^>]*\/>/, '<a:ea typeface="' + font + '"/>')
-            .replace(/<a:font script="Hang"[^>]*\/>/, '<a:font script="Hang" typeface="' + font + '"/>');
+            .replace(/<a:latin\b[^>]*\/>/, function () { return '<a:latin typeface="' + font + '"/>'; })
+            .replace(/<a:ea\b[^>]*\/>/, function () { return '<a:ea typeface="' + font + '"/>'; })
+            .replace(/<a:font script="Hang"[^>]*\/>/, function () { return '<a:font script="Hang" typeface="' + font + '"/>'; });
           return open + body + close;
         });
       zip.file('ppt/theme/theme1.xml', theme);
+    }
+
+    // presentation.xml 자식 순서 교정 — pptxgenjs 는 notesMasterIdLst 를 sldIdLst 뒤에
+    // 쓰는데 스키마(CT_Presentation)상 앞이어야 한다. 이 순서 위반도 "읽을 수 없는
+    // 콘텐츠" 복구를 일으킨다 (특히 구형 파워포인트에서 엄격).
+    var presFile = zip.file('ppt/presentation.xml');
+    if (presFile) {
+      var pres = await presFile.async('string');
+      pres = pres.replace(/(<p:presentation\b[^>]*>)([\s\S]*)(<\/p:presentation>)/,
+        function (all, open, body, close) {
+          var order = ['sldMasterIdLst', 'notesMasterIdLst', 'handoutMasterIdLst', 'sldIdLst',
+            'sldSz', 'notesSz', 'smartTags', 'embeddedFontLst', 'custShowLst', 'photoAlbum',
+            'custDataLst', 'kinsoku', 'defaultTextStyle', 'modifyVerifier', 'extLst'];
+          var found = [];
+          order.forEach(function (tag) {
+            var re = new RegExp('<p:' + tag + '(?:\\s[^>]*)?(?:/>|>[\\s\\S]*?</p:' + tag + '>)');
+            var m = body.match(re);
+            if (m) { found.push(m[0]); body = body.replace(m[0], ''); }
+          });
+          return open + found.join('') + body + close;
+        });
+      zip.file('ppt/presentation.xml', pres);
     }
 
     // OPC 패키지에는 디렉터리 항목이 없어야 한다 (pptxgenjs 가 넣는다)
@@ -1513,7 +1634,8 @@ jszip/dist/jszip.min.js:
         x: 0.4, y: 0.3, w: R.inW - 0.8, h: R.inH - 0.6,
         align: 'center', valign: 'middle',
         lang: 'ko-KR',   // 한글 런이라고 알려야 파워포인트가 <a:ea> 글꼴을 제대로 집는다
-        fontFace: f.pptx, fontSize: fontPt, bold: f.pptxBold,
+        // pptxgenjs 는 typeface 를 이스케이프 없이 XML 에 넣으므로 여기서 미리
+        fontFace: xmlAttr(f.pptx), fontSize: fontPt, bold: f.pptxBold,
         color: hex6(ink),
         lineSpacing: Math.round(fontPt * state.lineHeight)
       };
@@ -1611,10 +1733,23 @@ jszip/dist/jszip.min.js:
     name = (name || '').trim();
     if (!name) return;
     state.customFont = name;
+    state.customFontMeta = null;   // 직접 입력 = 적은 이름을 그대로 신뢰
     state.fontKey = 'custom';
     lsSet('sm_font', 'custom');
     lsSet('sm_customFont', name);
+    lsSet('sm_customFontMeta', '');
     render();
+  }
+  function applyLocalFont(fd) {
+    resolveLocalFont(fd).then(function (meta) {
+      state.customFontMeta = meta;
+      state.customFont = meta.label;
+      state.fontKey = 'custom';
+      lsSet('sm_font', 'custom');
+      lsSet('sm_customFont', meta.label);
+      lsSet('sm_customFontMeta', JSON.stringify(meta));
+      render();
+    });
   }
   // 이름을 비우면 기본 글꼴로 되돌린다
   function commitCustomFont(name) {
@@ -1628,21 +1763,30 @@ jszip/dist/jszip.min.js:
       return;
     }
     window.queryLocalFonts().then(function (fonts) {
-      var seen = {}, fams = [];
+      // 가족이 아니라 face(굵기) 단위로 — 파워포인트 목록과 같은 단위·같은 이름이 뜬다
+      localFaces = {};
+      var faces = [];
       fonts.forEach(function (fo) {
-        if (fo.family && !seen[fo.family]) { seen[fo.family] = true; fams.push(fo.family); }
+        var ps = fo.postscriptName || (fo.family + '/' + fo.style);
+        if (!fo.family || localFaces[ps]) return;
+        localFaces[ps] = fo;
+        faces.push({
+          ps: ps,
+          family: fo.family,
+          label: fo.fullName || (fo.family + (fo.style && fo.style !== 'Regular' ? ' ' + fo.style : ''))
+        });
       });
-      fams.sort(function (a, b) { return a.localeCompare(b, 'ko'); });
+      faces.sort(function (a, b) { return a.label.localeCompare(b.label, 'ko'); });
       var sel = $('localFontSel');
       sel.textContent = '';
       var ph = document.createElement('option');
-      ph.value = ''; ph.textContent = '글꼴 선택… (' + fams.length + '개)';
+      ph.value = ''; ph.textContent = '글꼴 선택… (' + faces.length + '개)';
       sel.appendChild(ph);
-      fams.forEach(function (fam) {
+      faces.forEach(function (fc) {
         var o = document.createElement('option');
-        o.value = fam;
-        o.textContent = fam;
-        o.style.fontFamily = '"' + fam.replace(/["\\]/g, '') + '"';
+        o.value = fc.ps;
+        o.textContent = fc.label;
+        o.style.fontFamily = '"' + fc.family.replace(/["\\]/g, '') + '"';
         sel.appendChild(o);
       });
       fontsLoaded = true;
@@ -1699,7 +1843,8 @@ jszip/dist/jszip.min.js:
       if (fontPickMode === 'type') $('customFontInput').focus();
     });
     $('localFontSel').addEventListener('change', function (e) {
-      if (e.target.value) applyCustomFont(e.target.value);
+      var fd = localFaces[e.target.value];
+      if (fd) applyLocalFont(fd);
     });
     // Enter/포커스 이동을 기다리지 않고 적는 대로 바로 반영 (짧게 묶어서)
     var cfTimer = null;
@@ -1770,6 +1915,8 @@ jszip/dist/jszip.min.js:
     if (ACCENTS.some(function (a) { return a.color === ac; })) state.accent = ac;
     var cf = lsGet('sm_customFont');
     if (cf) state.customFont = cf;
+    var cfm = lsGet('sm_customFontMeta');
+    if (cfm) { try { state.customFontMeta = JSON.parse(cfm) || null; } catch (e) {} }
     var fk = lsGet('sm_font');
     if (FONTS[fk] || (fk === 'custom' && state.customFont)) state.fontKey = fk;
     state.dark = lsGet('sm_dark') === '1';
