@@ -191,11 +191,17 @@ button:disabled{opacity:.4;cursor:default;pointer-events:none}
 .progress-track{margin-top:20px;height:12px;border-radius:99px;background:var(--surface2);overflow:hidden}
 .progress-fill{height:100%;width:0%;background:var(--accent);border-radius:99px;transition:width .25s ease}
 .progress-num{text-align:right;font-size:12.5px;font-weight:700;color:var(--accent);margin-top:8px}
-.ex-done-pane{text-align:center;padding:10px 0 6px}
-.done-check{width:64px;height:64px;border-radius:50%;background:var(--accentSoft);display:flex;align-items:center;justify-content:center;margin:0 auto;animation:popcheck .4s ease}
-.done-title{font-size:18px;font-weight:800;margin-top:16px}
-.done-desc{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.5}
-.done-btn{margin-top:20px;width:100%;height:48px;border-radius:12px;border:none;background:var(--accent);color:var(--accentInk);font-weight:700;font-size:14.5px;cursor:pointer}
+.ex-name{margin-top:18px}
+.ex-name-label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:7px}
+.ex-name-input{width:100%;height:46px;padding:0 14px;border-radius:11px;border:1.5px solid var(--border);background:var(--surface2);color:var(--ink);font-family:inherit;font-size:15px;font-weight:600;outline:none;transition:border-color .15s,box-shadow .15s}
+.ex-name-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accentSoft)}
+.ex-save-note{margin-top:8px;font-size:11.5px;color:var(--faint);line-height:1.5}
+.ex-done-pane{text-align:center;padding:16px 0 8px}
+.done-check{width:92px;height:92px;border-radius:50%;background:var(--accentSoft);display:flex;align-items:center;justify-content:center;margin:0 auto;animation:popcheck .4s ease}
+.done-title{font-size:27px;font-weight:800;margin-top:20px;letter-spacing:-.4px}
+.done-file{font-size:16px;font-weight:700;color:var(--accent);margin-top:10px;word-break:break-all;line-height:1.4}
+.done-desc{font-size:14px;color:var(--muted);margin-top:7px;line-height:1.5}
+.done-btn{margin-top:24px;width:100%;height:56px;border-radius:13px;border:none;background:var(--accent);color:var(--accentInk);font-weight:700;font-size:16px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -391,6 +397,13 @@ button:disabled{opacity:.4;cursor:default;pointer-events:none}
       <div class="modal-title">어떤 형식으로 내보낼까요?</div>
       <div class="modal-desc">슬라이드 <span id="exTotal">1</span>장을 저장합니다.</div>
       <div id="exFontWarn" class="cf-warn" role="status" hidden></div>
+
+      <div class="ex-name">
+        <label class="ex-name-label" for="fileNameInput">파일 이름</label>
+        <input type="text" id="fileNameInput" class="ex-name-input" value="슬라이드" spellcheck="false" aria-label="저장할 파일 이름">
+      </div>
+      <div id="exSaveNote" class="ex-save-note" hidden>형식을 고르면 저장할 폴더를 고를 수 있어요.</div>
+
       <div class="export-row">
         <button type="button" id="pngChoice" class="export-choice">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="8.5" cy="9.5" r="1.5"></circle><path d="m21 16-5-5L5 20"></path></svg>
@@ -414,10 +427,11 @@ button:disabled{opacity:.4;cursor:default;pointer-events:none}
 
     <div id="exDone" class="ex-done-pane" hidden>
       <div class="done-check">
-        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
       </div>
       <div class="done-title">저장했어요!</div>
-      <div class="done-desc"><span id="exTitleD">PNG</span> 파일이 준비됐어요.<br>다운로드 폴더를 확인해 주세요.</div>
+      <div id="exDoneName" class="done-file"></div>
+      <div id="exDoneWhere" class="done-desc"></div>
       <button type="button" id="doneClose" class="done-btn">닫기</button>
     </div>
   </div>
@@ -649,6 +663,8 @@ jszip/dist/jszip.min.js:
     save: 'saved',                 // 'saving' | 'saved' | 'error'
     exportState: 'idle',           // 'idle' | 'choosing' | 'progress' | 'done'
     exportFmt: null, exportPct: 0,
+    savedName: '',                 // 방금 저장한 파일 이름 (완료 화면에 표시)
+    savedPicked: false,            // 저장 위치를 직접 골랐는가
     images: [],                    // 업로드 배경 [{id, name, url}] (IndexedDB 복원)
     overlayMode: 'dark',           // 'dark' = 어두운 스크림+흰 글자, 'light' = 반대
     fontPx: null,                  // 글자 크기(px, 내보내기 기준). null = 자동 맞춤
@@ -679,6 +695,38 @@ jszip/dist/jszip.min.js:
     a.href = url; a.download = name;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  var MIME = {
+    pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    png: 'image/png',
+    zip: 'application/zip'
+  };
+  var EXT_LABEL = { pptx: '파워포인트 파일', png: 'PNG 이미지', zip: 'ZIP 압축 파일' };
+  // 저장 위치를 고르게 한다(크롬/엣지). 클릭 제스처가 살아 있을 때 불러야 하므로
+  // 무거운 작업을 시작하기 전에 호출한다. 지원 안 하면 null → 다운로드 폴더로 저장.
+  function pickSaveHandle(name, ext) {
+    if (!window.showSaveFilePicker) return Promise.resolve(null);
+    var accept = {};
+    accept[MIME[ext]] = ['.' + ext];
+    return window.showSaveFilePicker({
+      suggestedName: name + '.' + ext,
+      types: [{ description: EXT_LABEL[ext], accept: accept }]
+    }).catch(function (e) {
+      if (e && e.name === 'AbortError') throw e;   // 사용자가 취소 → 내보내기도 중단
+      return null;                                 // 그 밖의 이유 → 조용히 다운로드 폴더로
+    });
+  }
+  async function saveBlob(blob, handle, name) {
+    if (!handle) { downloadBlob(blob, name); return false; }
+    var w = await handle.createWritable();
+    await w.write(blob);
+    await w.close();
+    return true;
+  }
+  // 윈도우/맥에서 파일 이름에 못 쓰는 문자 제거
+  function fileBase() {
+    var v = ($('fileNameInput').value || '').replace(/[\\/:*?"<>|]/g, '').trim();
+    return v || '슬라이드';
   }
   function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
@@ -1065,10 +1113,13 @@ jszip/dist/jszip.min.js:
     $('exChoosing').hidden = state.exportState !== 'choosing';
     $('exProgress').hidden = state.exportState !== 'progress';
     $('exDone').hidden = state.exportState !== 'done';
-    var title = state.exportFmt === 'pptx' ? 'PPTX' : 'PNG';
-    $('exTitleP').textContent = title;
-    $('exTitleD').textContent = title;
+    $('exTitleP').textContent = state.exportFmt === 'pptx' ? 'PPTX' : 'PNG';
     $('exTotal').textContent = parseSlides(state.text).length;
+    $('exSaveNote').hidden = !window.showSaveFilePicker;
+    $('exDoneName').textContent = state.savedName || '';
+    $('exDoneWhere').textContent = state.savedPicked
+      ? '고른 폴더에 저장했어요.'
+      : '다운로드 폴더를 확인해 주세요.';
     $('exFill').style.width = state.exportPct + '%';
     $('exPctLabel').textContent = state.exportPct + '%';
 
@@ -1318,12 +1369,22 @@ jszip/dist/jszip.min.js:
       closeExport();
       return;
     }
-    state.exportFmt = fmt;
-    state.exportState = 'progress';
-    state.exportPct = 0;
-    renderModal();
-    var run = fmt === 'pptx' ? exportPPTX : exportPNG;
-    run(slides).then(function () {
+    var base = fileBase();
+    var ext = fmt === 'pptx' ? 'pptx' : (slides.length > 1 ? 'zip' : 'png');
+    lsSet('sm_fname', base);
+
+    // 저장 위치 선택창은 여기서 바로 띄운다 — 렌더링을 기다렸다 부르면
+    // 클릭 제스처가 만료돼서 브라우저가 거부한다.
+    pickSaveHandle(base, ext).then(function (handle) {
+      state.exportFmt = fmt;
+      state.exportState = 'progress';
+      state.exportPct = 0;
+      state.savedName = base + '.' + ext;
+      state.savedPicked = !!handle;
+      renderModal();
+      var run = fmt === 'pptx' ? exportPPTX : exportPNG;
+      return run(slides, handle, base);
+    }).then(function () {
       setPct(100);
       return timeout(300);
     }).then(function () {
@@ -1333,11 +1394,12 @@ jszip/dist/jszip.min.js:
       }
     }).catch(function (e) {
       closeExport();
+      if (e && e.name === 'AbortError') return;   // 저장 위치 선택을 취소함 — 조용히 닫기
       alert('내보내기 실패: ' + (e && e.message ? e.message : e));
     });
   }
 
-  async function exportPNG(slides) {
+  async function exportPNG(slides, handle, base) {
     await ensureFont();
     var bg = await getBgImage();
     var R = RATIOS[state.ratio];
@@ -1354,25 +1416,80 @@ jszip/dist/jszip.min.js:
       await timeout(0);
     }
     if (blobs.length === 1) {
-      downloadBlob(blobs[0], '슬라이드.png');
+      await saveBlob(blobs[0], handle, base + '.png');
       return;
     }
     var zip = new JSZip();
     blobs.forEach(function (b, i) {
-      zip.file('slide_' + String(i + 1).padStart(2, '0') + '.png', b);
+      zip.file(base + '_' + String(i + 1).padStart(2, '0') + '.png', b);
     });
     var out = await zip.generateAsync({ type: 'blob' }, function (meta) {
       setPct(85 + meta.percent * 0.15);
     });
-    downloadBlob(out, '슬라이드_PNG.zip');
+    await saveBlob(out, handle, base + '.zip');
   }
 
-  async function exportPPTX(slides) {
+  function xmlAttr(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  // pptxgenjs 가 만든 파일을 파워포인트가 제대로 읽도록 손본다.
+  //
+  // (1) 파일 손상 — <p:bgPr>(슬라이드 배경색) 안에는 채우기 다음에 <a:effectLst/> 가
+  //     반드시 있어야 하는데(CT_BackgroundProperties 필수) pptxgenjs 가 빼먹는다.
+  //     파워포인트는 이걸 "읽을 수 없는 콘텐츠"로 보고 복구를 제안하며, 복구하면서
+  //     글꼴 서식까지 통째로 버린다 → 글꼴 이름 칸이 비고 기본 글꼴로 나옴.
+  //
+  // (2) 한글 글꼴 — 파워포인트는 한글을 <a:ea>(동아시아) 글꼴로 그리는데 pptxgenjs 가
+  //     거기에 charset="-122"(GB2312=중국어 간체)를 하드코딩한다. 한글은 -127.
+  //
+  // (3) 테마 기본 글꼴 — 위 두 가지로 런 지정이 무시될 때 파워포인트가 최후에 집는 것이
+  //     테마의 script="Hang" 글꼴(기본값 맑은 고딕)이다. 이것도 고른 글꼴로 바꿔
+  //     슬라이드 전체가 그 글꼴을 쓰게 한다.
+  async function fixupPptx(blob, fontName) {
+    var font = xmlAttr(fontName);
+    // createFolders:false — 다시 압축할 때 빈 디렉터리 항목이 끼지 않도록
+    var zip = await JSZip.loadAsync(blob, { createFolders: false });
+
+    var slideNames = Object.keys(zip.files).filter(function (n) {
+      return /^ppt\/slides\/slide\d+\.xml$/.test(n);
+    });
+    for (var i = 0; i < slideNames.length; i++) {
+      var xml = await zip.file(slideNames[i]).async('string');
+      xml = xml.replace(/(<p:bgPr>[\s\S]*?)(<\/p:bgPr>)/g, function (all, body, close) {
+        return body.indexOf('<a:effectLst') === -1 ? body + '<a:effectLst/>' + close : all;
+      });
+      xml = xml.replace(/(<a:ea\b[^>]*?)charset="-122"/g, '$1charset="-127"');
+      zip.file(slideNames[i], xml);
+    }
+
+    var themeFile = zip.file('ppt/theme/theme1.xml');
+    if (themeFile) {
+      var theme = await themeFile.async('string');
+      theme = theme.replace(/(<a:(?:major|minor)Font>)([\s\S]*?)(<\/a:(?:major|minor)Font>)/g,
+        function (all, open, body, close) {
+          body = body
+            .replace(/<a:latin\b[^>]*\/>/, '<a:latin typeface="' + font + '"/>')
+            .replace(/<a:ea\b[^>]*\/>/, '<a:ea typeface="' + font + '"/>')
+            .replace(/<a:font script="Hang"[^>]*\/>/, '<a:font script="Hang" typeface="' + font + '"/>');
+          return open + body + close;
+        });
+      zip.file('ppt/theme/theme1.xml', theme);
+    }
+
+    // OPC 패키지에는 디렉터리 항목이 없어야 한다 (pptxgenjs 가 넣는다)
+    Object.keys(zip.files).forEach(function (n) {
+      if (zip.files[n].dir) delete zip.files[n];
+    });
+    return zip.generateAsync({ type: 'blob', mimeType: MIME.pptx, compression: 'DEFLATE' });
+  }
+
+  async function exportPPTX(slides, handle, base) {
     await ensureFont();
     var bg = await getBgImage();
     var R = RATIOS[state.ratio];
     var f = curFont();
     var pptx = new PptxGenJS();
+    pptx.title = base.replace(/[&<>"']/g, '');   // core.xml 에 그대로 들어가므로 XML 깨질 문자 제거
     pptx.defineLayout({ name: 'CH', width: R.inW, height: R.inH });
     pptx.layout = 'CH';
     // 이미지 배경은 오버레이까지 미리 합성한 한 장으로 (텍스트는 편집 가능하게 유지)
@@ -1395,6 +1512,7 @@ jszip/dist/jszip.min.js:
       var opts = {
         x: 0.4, y: 0.3, w: R.inW - 0.8, h: R.inH - 0.6,
         align: 'center', valign: 'middle',
+        lang: 'ko-KR',   // 한글 런이라고 알려야 파워포인트가 <a:ea> 글꼴을 제대로 집는다
         fontFace: f.pptx, fontSize: fontPt, bold: f.pptxBold,
         color: hex6(ink),
         lineSpacing: Math.round(fontPt * state.lineHeight)
@@ -1410,7 +1528,10 @@ jszip/dist/jszip.min.js:
       await timeout(0);
     }
     setPct(70);
-    await pptx.writeFile({ fileName: '슬라이드.pptx' });
+    var raw = await pptx.write({ outputType: 'blob' });
+    setPct(85);
+    var out = await fixupPptx(raw, f.pptx);
+    await saveBlob(out, handle, base + '.pptx');
   }
 
   /* ---------- 정적 옵션 버튼 생성 (init에서 1회) ---------- */
@@ -1652,6 +1773,9 @@ jszip/dist/jszip.min.js:
     var fk = lsGet('sm_font');
     if (FONTS[fk] || (fk === 'custom' && state.customFont)) state.fontKey = fk;
     state.dark = lsGet('sm_dark') === '1';
+
+    var fn = lsGet('sm_fname');
+    if (fn) $('fileNameInput').value = fn;
 
     $('lyricsTa').value = state.text;
     buildStaticOptions();
