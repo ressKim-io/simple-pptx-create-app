@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>슬라이드 메이커</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='10' fill='%230E7C6B'/%3E%3Ctext x='17' y='24' text-anchor='middle' font-family='sans-serif' font-weight='800' font-size='20' fill='%23fff'%3ES%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,7 +40,7 @@ html,body{height:100%}
 /* 글꼴/글자색도 body 에 — 모달이 브라우저 기본 글꼴(Times)로 뜨지 않도록 */
 body{font-family:Pretendard,system-ui,sans-serif;font-size:15px;background:var(--bg);color:var(--ink)}
 #app{
-  height:100vh;min-height:560px;display:flex;flex-direction:column;
+  height:100vh;height:100dvh;min-height:560px;display:flex;flex-direction:column;
   background:var(--bg);color:var(--ink);overflow:hidden;
 }
 
@@ -102,7 +102,7 @@ button:disabled{opacity:.4;cursor:default;pointer-events:none}
 /* 썸네일 스트립 */
 .thumbs-row{flex:none;display:flex;align-items:center;gap:11px;padding:11px 22px;overflow-x:auto;border-top:1px solid var(--border);background:var(--surface)}
 .thumb{flex:none;width:118px;height:68px;border-radius:11px;border:2px solid var(--border);color:var(--slideInk);font-family:var(--slideFont);position:relative;overflow:hidden;padding:10px 11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;cursor:pointer;transition:transform .12s,border-color .15s}
-.thumb:hover{transform:translateY(-2px)}
+@media (hover:hover){.thumb:hover{transform:translateY(-2px)}}
 .thumb.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accentSoft)}
 .thumb-num{position:absolute;top:4px;right:7px;font-size:9.5px;font-weight:700;color:var(--slideMuted);font-family:Pretendard,sans-serif}
 .thumb-l1{max-width:100%;font-size:11.5px;font-weight:700;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -123,15 +123,15 @@ button:disabled{opacity:.4;cursor:default;pointer-events:none}
 .seg-sm .seg-btn{min-height:40px;font-size:12.5px}
 .bg-grid{display:flex;flex-wrap:wrap;gap:9px}
 .bg-chip{width:56px;height:48px;border-radius:11px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;cursor:pointer;transition:transform .12s}
-.bg-chip:hover{transform:translateY(-2px)}
+@media (hover:hover){.bg-chip:hover{transform:translateY(-2px)}}
 .bg-chip.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accentSoft)}
 .img-wrap{position:relative;display:inline-flex}
 .img-chip{width:56px;height:48px;border-radius:11px;border:2px solid var(--border);cursor:pointer;transition:transform .12s}
-.img-chip:hover{transform:translateY(-2px)}
+@media (hover:hover){.img-chip:hover{transform:translateY(-2px)}}
 .img-chip.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accentSoft)}
 .img-del{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;border:2px solid var(--surface);background:var(--ink);color:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;line-height:1;z-index:1}
 .upload-chip{position:relative;width:56px;height:48px;border-radius:11px;border:2px dashed var(--border);background:var(--surface2);color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;transition:border-color .15s,color .15s}
-.upload-chip:hover{border-color:var(--accent);color:var(--accent)}
+@media (hover:hover){.upload-chip:hover{border-color:var(--accent);color:var(--accent)}}
 .upload-chip span{font-size:9px;font-weight:700}
 .upload-chip input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0 0 0 0)}
 .preset-copy-row{margin-top:10px}
@@ -139,7 +139,7 @@ button:disabled{opacity:.4;cursor:default;pointer-events:none}
 .overlay-box{margin-top:14px;animation:fadein .2s ease}
 .accent-row{display:flex;flex-wrap:wrap;gap:11px}
 .accent-dot{width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.18);transition:transform .12s}
-.accent-dot:hover{transform:scale(1.08)}
+@media (hover:hover){.accent-dot:hover{transform:scale(1.08)}}
 .accent-dot.sel{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ink)}
 .font-col{display:flex;flex-direction:column;gap:8px}
 .font-opt{display:flex;align-items:center;gap:12px;min-height:46px;padding:0 14px;border-radius:11px;border:2px solid var(--border);background:var(--surface2);color:var(--ink);cursor:pointer;text-align:left;transition:background .15s}
@@ -183,7 +183,7 @@ button:disabled{opacity:.4;cursor:default;pointer-events:none}
 #exFontWarn{margin-top:14px}
 .export-row{display:flex;gap:12px;margin-top:20px}
 .export-choice{flex:1;padding:20px 14px;border-radius:15px;border:1.5px solid var(--border);background:var(--surface2);color:var(--ink);cursor:pointer;text-align:left;transition:border-color .15s,transform .1s}
-.export-choice:hover{border-color:var(--accent);transform:translateY(-2px)}
+@media (hover:hover){.export-choice:hover{border-color:var(--accent);transform:translateY(-2px)}}
 .export-choice .t{font-weight:800;font-size:15px;margin-top:12px}
 .export-choice .d{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45}
 .ex-progress-pane{padding:8px 0 4px}
@@ -202,6 +202,34 @@ button:disabled{opacity:.4;cursor:default;pointer-events:none}
 .done-file{font-size:16px;font-weight:700;color:var(--accent);margin-top:10px;word-break:break-all;line-height:1.4}
 .done-desc{font-size:14px;color:var(--muted);margin-top:7px;line-height:1.5}
 .done-btn{margin-top:24px;width:100%;height:56px;border-radius:13px;border:none;background:var(--accent);color:var(--accentInk);font-weight:700;font-size:16px;cursor:pointer}
+
+/* ---------- 모바일 (≤880px): 상단 고정 미리보기 + 세로 스크롤 ---------- */
+@media (max-width: 880px){
+  #app{min-height:0;padding-left:env(safe-area-inset-left,0);padding-right:env(safe-area-inset-right,0)}
+  .main{flex-direction:column;overflow-y:auto}
+  /* 미리보기 블록(내비+슬라이드+썸네일)을 맨 위에 sticky 로 — 입력·꾸미기가 그 아래로 스크롤 */
+  .center{order:-1;position:sticky;top:0;z-index:4;flex:none;background:var(--bg);border-bottom:1px solid var(--border)}
+  .pv-bar{height:44px;padding:0 12px}
+  /* container-type:size 라 확정 높이 필수 — 이 안에서 PVW min() 공식이 비율별로 알아서 맞춘다 */
+  .stage{flex:none;height:min(42vh,58vw);padding:6px 12px}
+  .thumbs-row{padding:8px 12px;gap:8px}
+  .thumb{width:96px;height:56px}
+  .left{width:auto;flex:none;border-right:none;border-bottom:1px solid var(--border)}
+  /* column 흐름에서는 flex:1 이 높이를 못 만들므로 확정 높이 */
+  .ta-wrap{flex:none;height:max(200px,34vh)}
+  .right{width:auto;flex:none;border-left:none;overflow:visible;padding-bottom:env(safe-area-inset-bottom,0)}
+  .right-head{position:static}
+  /* iOS 는 16px 미만 입력칸에 포커스하면 화면을 확대해 버린다 */
+  .lyrics-ta,.cf-input,.cf-select,.ex-name-input{font-size:16px}
+  .modal-backdrop{padding:14px}
+  .modal-card{padding:22px 18px 18px}
+}
+/* 더 좁은 화면: 헤더 축약 — 로고·저장 점·아이콘만 남긴다 */
+@media (max-width: 520px){
+  .hdr{padding:0 10px;gap:8px}
+  .brand-name,#saveLabel,#darkLabel{display:none}
+  .btn-primary{padding:0 14px}
+}
 </style>
 </head>
 <body>
@@ -257,7 +285,7 @@ button:disabled{opacity:.4;cursor:default;pointer-events:none}
       </div>
       <div class="left-foot">
         <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
-        <span>입력하는 대로 오른쪽 미리보기가 바로 바뀌어요.</span>
+        <span>입력하는 대로 미리보기가 바로 바뀌어요.</span>
       </div>
     </aside>
 
