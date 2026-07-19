@@ -1575,6 +1575,15 @@ jszip/dist/jszip.min.js:
   // (3) 테마 기본 글꼴 — 위 두 가지로 런 지정이 무시될 때 파워포인트가 최후에 집는 것이
   //     테마의 script="Hang" 글꼴(기본값 맑은 고딕)이다. 이것도 고른 글꼴로 바꿔
   //     슬라이드 전체가 그 글꼴을 쓰게 한다.
+  //
+  // (4) 발표자 노트 부속 — pptxgenjs 가 만드는 notesMaster 의 자리표시자 도형들이
+  //     파워포인트 기준으로 불량이라 "복구" 창이 뜬다. 복구가 노트 마스터 속만 지우므로
+  //     슬라이드 겉보기는 멀쩡해서 원인을 알기 어렵다 (gitbrent/PptxGenJS#1443, #1449).
+  //     이 앱은 노트를 안 쓰므로 노트 파트를 통째로 제거한다.
+  //
+  // (5) 유령 Override — pptxgenjs 는 [Content_Types].xml 에 슬라이드 수만큼
+  //     slideMasterN Override 를 쓰는데 실제 파일은 slideMaster1 하나뿐이다.
+  //     없는 파트를 선언하는 것도 복구 사유로 보고돼 있어 같이 지운다.
   async function fixupPptx(blob, fontName) {
     var font = xmlAttr(fontName);
     // createFolders:false — 다시 압축할 때 빈 디렉터리 항목이 끼지 않도록
@@ -1590,6 +1599,40 @@ jszip/dist/jszip.min.js:
       });
       xml = xml.replace(/(<a:ea\b[^>]*?)charset="-122"/g, '$1charset="-127"');
       zip.file(slideNames[i], xml);
+    }
+
+    // (4) 노트 파트 제거 + 참조 정리
+    Object.keys(zip.files).forEach(function (n) {
+      if (/^ppt\/(notesMasters|notesSlides)\//.test(n)) delete zip.files[n];
+    });
+    var slideRels = Object.keys(zip.files).filter(function (n) {
+      return /^ppt\/slides\/_rels\/slide\d+\.xml\.rels$/.test(n);
+    });
+    for (var j = 0; j < slideRels.length; j++) {
+      var rels = await zip.file(slideRels[j]).async('string');
+      zip.file(slideRels[j], rels.replace(/<Relationship\b[^>]*notesSlide[^>]*\/>/g, ''));
+    }
+    var pRelsFile = zip.file('ppt/_rels/presentation.xml.rels');
+    if (pRelsFile) {
+      var pRels = await pRelsFile.async('string');
+      zip.file('ppt/_rels/presentation.xml.rels', pRels.replace(/<Relationship\b[^>]*notesMaster[^>]*\/>/g, ''));
+    }
+    var appFile = zip.file('docProps/app.xml');
+    if (appFile) {
+      var app = await appFile.async('string');
+      zip.file('docProps/app.xml', app.replace(/<Notes>\d+<\/Notes>/, '<Notes>0</Notes>'));
+    }
+
+    // (4)+(5) [Content_Types].xml — 노트 Override 와 없는 slideMasterN Override 제거
+    var ctFile = zip.file('[Content_Types].xml');
+    if (ctFile) {
+      var ct = await ctFile.async('string');
+      ct = ct.replace(/<Override PartName="\/ppt\/(?:notesMasters|notesSlides)\/[^"]*"[^>]*\/>/g, '');
+      ct = ct.replace(/<Override PartName="\/ppt\/slideMasters\/(slideMaster\d+\.xml)"[^>]*\/>/g,
+        function (all, name) {
+          return zip.file('ppt/slideMasters/' + name) ? all : '';
+        });
+      zip.file('[Content_Types].xml', ct);
     }
 
     var themeFile = zip.file('ppt/theme/theme1.xml');
@@ -1612,6 +1655,8 @@ jszip/dist/jszip.min.js:
     var presFile = zip.file('ppt/presentation.xml');
     if (presFile) {
       var pres = await presFile.async('string');
+      // (4) 노트 마스터 목록 제거 (파트를 지웠으니 참조도 없어야 한다)
+      pres = pres.replace(/<p:notesMasterIdLst(?:\/>|>[\s\S]*?<\/p:notesMasterIdLst>)/, '');
       pres = pres.replace(/(<p:presentation\b[^>]*>)([\s\S]*)(<\/p:presentation>)/,
         function (all, open, body, close) {
           var order = ['sldMasterIdLst', 'notesMasterIdLst', 'handoutMasterIdLst', 'sldIdLst',
