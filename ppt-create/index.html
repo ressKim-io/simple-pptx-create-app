@@ -91,11 +91,14 @@ button:disabled{opacity:.4;cursor:default;pointer-events:none}
 .pv-count{font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap}
 .pv-count b{color:var(--ink)}
 .stage{flex:1;display:flex;align-items:center;justify-content:center;padding:8px 26px 10px;min-height:0;overflow:hidden;container-type:size;position:relative}
-.slide{max-width:96%;background:var(--slideBg);color:var(--slideInk);font-family:var(--slideFont);border-radius:16px;box-shadow:var(--shadow),inset 0 0 0 2px transparent;overflow:hidden;position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6% 7%;transition:box-shadow .25s;container-type:size}
+/* .slide 에 패딩 금지 — 자식의 cqw 는 content-box(패딩 제외) 기준이라 패딩만큼 미리보기
+   글자가 내보내기보다 작게 보인다. 텍스트 여백은 .lyrics 의 cqw/cqh 패딩으로 준다 */
+.slide{max-width:96%;background:var(--slideBg);color:var(--slideInk);font-family:var(--slideFont);border-radius:16px;box-shadow:var(--shadow),inset 0 0 0 2px transparent;overflow:hidden;position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;transition:box-shadow .25s;container-type:size}
 .slide-bg{position:absolute;inset:0;z-index:0}
 .slide-overlay{position:absolute;inset:0;z-index:0}
-.slide-empty{position:relative;z-index:1;font-size:3.4cqw;color:var(--slideMuted);font-weight:500}
-.lyrics{position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center;align-items:center;width:100%;font-weight:var(--slideWeight);line-height:1.5;text-wrap:balance}
+.slide-empty{position:relative;z-index:1;font-size:3.4cqw;color:var(--slideMuted);font-weight:500;padding:0 7cqw}
+/* 좌우 7cqw → 글 영역 86cqw = 내보내기 캔버스 maxW(0.86W)·PPTX 텍스트 상자와 동일 */
+.lyrics{position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center;align-items:center;width:100%;padding:6cqh 7cqw;font-weight:var(--slideWeight);line-height:1.5;text-wrap:balance}
 .lyrics>div{width:100%}
 .slide-num{position:absolute;top:16px;right:20px;z-index:1;font-size:13px;font-weight:700;color:var(--slideMuted);font-family:Pretendard,sans-serif}
 
@@ -1659,7 +1662,9 @@ jszip/dist/jszip.min.js:
       if (bgData) s.addImage({ data: bgData, x: 0, y: 0, w: R.inW, h: R.inH });
       else s.background = { color: hex6((BGS[state.bgKey] || BGS.white).bg) };
       var opts = {
-        x: 0.4, y: 0.3, w: R.inW - 0.8, h: R.inH - 0.6,
+        // 좌우 7% 여백 = 미리보기(.lyrics 7cqw)·PNG 캔버스(maxW 0.86W)와 같은 줄바꿈 폭.
+        // margin:0 — 텍스트 상자 기본 내부 여백(0.1in)까지 없애야 폭이 정확히 86%가 된다.
+        x: R.inW * 0.07, y: 0.3, w: R.inW * 0.86, h: R.inH - 0.6, margin: 0,
         align: 'center', valign: 'middle',
         lang: 'ko-KR',   // 한글 런이라고 알려야 파워포인트가 <a:ea> 글꼴을 제대로 집는다
         // pptxgenjs 는 typeface 를 이스케이프 없이 XML 에 넣으므로 여기서 미리
