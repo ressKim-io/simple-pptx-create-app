@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "simple-pptx-create-app",
+  "compatibility_date": "2026-07-19",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "ppt-create"
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}
