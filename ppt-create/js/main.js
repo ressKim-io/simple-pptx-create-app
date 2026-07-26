@@ -4,7 +4,7 @@
    - UI 디자인: Claude Design 목업 이식 / 내보내기: 기존 앱 로직 이식
    ============================================================ */
 import {
-  FONTS, BGS, ACCENTS, RATIOS, OVERLAY_SHAPES,
+  BUILD, FONTS, BGS, ACCENTS, RATIOS, OVERLAY_SHAPES,
   PX_MIN, PX_MAX, PX_STEP, TRACK_MIN, TRACK_MAX, LINE_MIN, LINE_MAX,
   OV_MIN, OV_MAX, OV_DEFAULT
 } from './config.js';
@@ -397,6 +397,7 @@ function init() {
   var fn = lsGet('sm_fname');
   if (fn) $('fileNameInput').value = fn;
 
+  $('buildTag').textContent = '버전 ' + BUILD;
   $('lyricsTa').value = state.text;
   buildStaticOptions();
   bindEvents();

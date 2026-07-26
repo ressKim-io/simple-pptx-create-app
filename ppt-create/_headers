@@ -1,0 +1,10 @@
+# 배포 루트가 ppt-create 일 때 적용되는 사본 (루트의 _headers 와 같은 이유 — 그쪽 주석 참고)
+
+/js/*
+  Cache-Control: no-cache
+
+/css/*
+  Cache-Control: no-cache
+
+/presets.json
+  Cache-Control: no-cache

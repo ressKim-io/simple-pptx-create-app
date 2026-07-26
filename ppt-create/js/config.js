@@ -3,6 +3,10 @@
    새 기능을 붙일 때 여기 상수만 늘리면 되도록 데이터는 전부 이 파일에.
    ============================================================ */
 
+// 배포된 판을 눈으로 확인하려고 화면 맨 아래에 찍는다 (폰에서 캐시 때문에 옛 파일이
+// 남으면 기능이 반쯤만 도는데, 이 날짜가 안 바뀌면 옛 판이 도는 것)
+export var BUILD = '2026-07-26';
+
 export var FB = ',"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo",system-ui,sans-serif';
 export var SERIF_FB = ',"Batang","바탕",serif';
 
