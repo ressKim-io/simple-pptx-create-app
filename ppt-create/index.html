@@ -126,6 +126,20 @@
         <div id="overlayBox" class="overlay-box" hidden>
           <div class="sec-subtitle">글자 대비</div>
           <div id="overlayGroup" role="group" aria-label="이미지 위 글자 대비" class="seg seg-sm"></div>
+
+          <div class="sec-subtitle ov-gap">덮는 모양</div>
+          <div id="overlayShapeGroup" role="group" aria-label="사진을 덮는 모양" class="seg seg-sm seg-grid"></div>
+
+          <div class="scale-head ov-gap">
+            <div class="sec-subtitle">진하기</div>
+            <span id="ovDefault">기본</span>
+            <button type="button" id="ovReset" class="link-btn" hidden>기본으로</button>
+          </div>
+          <div class="slider-row">
+            <input type="range" id="ovRange" min="0" max="100" step="5" value="60" aria-label="덮개 진하기(퍼센트)">
+            <div id="ovVal" aria-live="polite" class="slider-val">60%</div>
+          </div>
+          <div id="ovNote" class="scale-note"></div>
         </div>
       </div>
 

@@ -2,7 +2,7 @@
    state — 앱 상태 + 영속화 (localStorage 는 utils, 이미지는 IndexedDB)
    여기 함수들은 상태만 바꾸고 렌더링하지 않는다 — 호출한 쪽이 render() 를 부른다.
    ============================================================ */
-import { DEFAULT_TEXT } from './config.js';
+import { DEFAULT_TEXT, OV_DEFAULT } from './config.js';
 import { lsSet } from './utils.js';
 
 export var state = {
@@ -21,6 +21,8 @@ export var state = {
   savedPicked: false,            // 저장 위치를 직접 골랐는가
   images: [],                    // 업로드 배경 [{id, name, url}] (IndexedDB 복원)
   overlayMode: 'dark',           // 'dark' = 어두운 스크림+흰 글자, 'light' = 반대
+  overlayShape: 'full',          // 스크림 모양: 'full' | 'sides' | 'updown' | 'edges' (config.OVERLAY_SHAPES)
+  overlayStrength: OV_DEFAULT,   // 스크림 진하기 0~100 (가장자리 모양이면 끝의 진하기)
   fontPx: null,                  // 글자 크기(px, 내보내기 기준). null = 자동 맞춤
   letterSpacing: 0,              // 자간: 글자 크기 대비 % (-5 ~ +5, 0.1 단위)
   lineHeight: 1.5,               // 줄 간격 배수 (1.0 ~ 2.5)

@@ -6,7 +6,7 @@ import { BGS, RATIOS } from './config.js';
 import { $, timeout, hex6, xmlAttr, MIME, pickSaveHandle, saveBlob, lsSet } from './utils.js';
 import { state } from './state.js';
 import { curFont, ensureFont } from './fonts.js';
-import { parseSlides, curPx, getBgImage } from './slides.js';
+import { parseSlides, curPx, getBgImage, overlayLayers } from './slides.js';
 import { renderModal } from './render.js';
 
 var PptxGenJS = window.ChoirLibs.PptxGenJS;
@@ -25,17 +25,19 @@ export function drawCover(ctx, img, W, H) {
   else { dw = W; dh = W / ir; dx = 0; dy = (H - dh) / 2; }
   ctx.drawImage(img, dx, dy, dw, dh);
 }
+// 미리보기와 같은 정지점(slides.overlayLayers)으로 그린다 — 층은 겹쳐 칠한다.
 export function drawOverlay(ctx, W, H) {
-  var g = ctx.createLinearGradient(0, 0, 0, H);
-  if (state.overlayMode === 'light') {
-    g.addColorStop(0, 'rgba(248,247,243,.55)');
-    g.addColorStop(1, 'rgba(248,247,243,.72)');
-  } else {
-    g.addColorStop(0, 'rgba(10,12,16,.42)');
-    g.addColorStop(1, 'rgba(10,12,16,.60)');
-  }
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, W, H);
+  var ov = overlayLayers();
+  ov.layers.forEach(function (L) {
+    var g = L.dir === 'h'
+      ? ctx.createLinearGradient(0, 0, W, 0)
+      : ctx.createLinearGradient(0, 0, 0, H);
+    L.stops.forEach(function (st) {
+      g.addColorStop(Math.max(0, Math.min(1, st.p)), 'rgba(' + ov.rgb + ',' + st.a + ')');
+    });
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+  });
 }
 function exportInk(imgOn) {
   if (imgOn) return state.overlayMode === 'light' ? '#1B1D20' : '#FFFFFF';

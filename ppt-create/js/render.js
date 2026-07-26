@@ -2,11 +2,23 @@
    render — 상태 → 화면 (테마 변수, 미리보기, 컨트롤, 썸네일, 내보내기 모달)
    상태는 읽기만 하고, 화면 갱신은 전부 여기서만 한다.
    ============================================================ */
-import { BGS, PVW, PV_ASPECT, RATIOS, PX_MIN, PX_MAX } from './config.js';
+import { BGS, PVW, PV_ASPECT, RATIOS, PX_MIN, PX_MAX, OV_DEFAULT } from './config.js';
 import { $, hexA, lsSet } from './utils.js';
 import { state, presets, fontUi, removeImage } from './state.js';
 import { curFont, missingFontName } from './fonts.js';
-import { parseSlides, curPx, currentImage } from './slides.js';
+import { parseSlides, curPx, currentImage, overlayLayers } from './slides.js';
+
+/* ---------- 스크림 → CSS 그라데이션 (정지점은 slides.overlayLayers 가 계산) ---------- */
+function r3(n) { return Math.round(n * 1000) / 1000; }
+function overlayCss(shapeKey, strengthPct) {
+  var ov = overlayLayers(shapeKey, strengthPct);
+  return ov.layers.map(function (L) {
+    var stops = L.stops.map(function (st) {
+      return 'rgba(' + ov.rgb + ',' + r3(st.a) + ') ' + r3(st.p * 100) + '%';
+    });
+    return 'linear-gradient(' + (L.dir === 'h' ? '90deg' : '180deg') + ',' + stops.join(',') + ')';
+  }).join(',');
+}
 
 /* ---------- 테마 ---------- */
 function themeVars() {
@@ -84,9 +96,7 @@ function renderPreview(slides, cur) {
   $('slideOverlay').hidden = !imgOn;
   if (imgOn) {
     $('slideBgImg').style.background = 'url(' + JSON.stringify(img.url) + ') center/cover no-repeat';
-    $('slideOverlay').style.background = lightMode
-      ? 'linear-gradient(180deg,rgba(248,247,243,.55),rgba(248,247,243,.72))'
-      : 'linear-gradient(180deg,rgba(10,12,16,.42),rgba(10,12,16,.60))';
+    $('slideOverlay').style.background = overlayCss();
   }
   $('emptyMsg').hidden = cur.lines.length !== 0;
 
@@ -152,6 +162,7 @@ function renderControls() {
   var imgOn = !!currentImage();
   $('overlayBox').hidden = !imgOn;
   selToggle($('overlayGroup'), '.seg-btn', 'mode', state.overlayMode);
+  if (imgOn) renderOverlayBox();
   selToggle($('accentRow'), '.accent-dot', 'color', state.accent);
   selToggle($('fontCol'), '.font-opt', 'font', state.fontKey);
 
@@ -206,6 +217,27 @@ function renderControls() {
   var warn = $('cfWarn');
   warn.hidden = !miss;
   if (miss) warn.textContent = '‘' + miss + '’ 글꼴이 이 컴퓨터에 없어요. 미리보기와 PNG는 기본 글꼴로 나와요. (PPTX에는 이 이름 그대로 저장되니, 파일을 열 컴퓨터에 이 글꼴이 있으면 제대로 보여요.)';
+}
+
+/* 덮개(스크림) — 모양 견본은 실제 그라데이션으로, 진하기는 슬라이더로 */
+function renderOverlayBox() {
+  var shapeGroup = $('overlayShapeGroup');
+  selToggle(shapeGroup, '.seg-btn', 'shape', state.overlayShape);
+  shapeGroup.querySelectorAll('.seg-btn').forEach(function (b) {
+    var sw = b.querySelector('.ov-sw');
+    if (sw) sw.style.backgroundImage = overlayCss(b.dataset.shape, 92);
+  });
+
+  var s = state.overlayStrength;
+  $('ovRange').value = s;
+  $('ovVal').textContent = s + '%';
+  $('ovDefault').hidden = s !== OV_DEFAULT;
+  $('ovReset').hidden = s === OV_DEFAULT;
+
+  var light = state.overlayMode === 'light';
+  $('ovNote').textContent = state.overlayShape === 'full'
+    ? '사진 전체를 ' + (light ? '밝게' : '어둡게') + ' 덮어요. 진하기를 올릴수록 글자가 잘 보이고, 사진은 덜 보여요.'
+    : '끝으로 갈수록 ' + (light ? '흰색' : '검은색') + '에 가까워지고 가운데는 사진이 그대로 보여요. 100%면 끝이 완전히 ' + (light ? '흰색' : '검은색') + '이에요.';
 }
 
 function renderImgChips() {

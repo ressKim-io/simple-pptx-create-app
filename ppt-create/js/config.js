@@ -21,6 +21,17 @@ export var BGS = {
   ink:   { label: '먹',   bg: '#23262B', ink: '#EDEEF0', muted: '#9AA0A9' }
 };
 
+// 이미지 배경 위에 덮는 스크림 — 색은 '글자 대비'(overlayMode), 모양·진하기는 따로 고른다.
+// edge = 가장자리에서 시작해 투명해지기까지의 폭(0~0.5, 슬라이드 길이 대비). null = 전면 덮기.
+export var OVERLAY_RGB = { dark: '10,12,16', light: '248,247,243' };
+export var OVERLAY_SHAPES = [
+  { key: 'full',   label: '전체',     layers: [{ dir: 'v', edge: null }] },
+  { key: 'sides',  label: '좌우',     layers: [{ dir: 'h', edge: 0.42 }] },
+  { key: 'updown', label: '위아래',   layers: [{ dir: 'v', edge: 0.42 }] },
+  { key: 'edges',  label: '가장자리', layers: [{ dir: 'h', edge: 0.32 }, { dir: 'v', edge: 0.32 }] }
+];
+export var OV_MIN = 0, OV_MAX = 100, OV_DEFAULT = 60;
+
 export var ACCENTS = [
   { key: 'teal',   color: '#0E7C6B', name: '청록' },
   { key: 'indigo', color: '#4257C4', name: '남보라' },

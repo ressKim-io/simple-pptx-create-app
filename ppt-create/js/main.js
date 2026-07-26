@@ -4,8 +4,9 @@
    - UI 디자인: Claude Design 목업 이식 / 내보내기: 기존 앱 로직 이식
    ============================================================ */
 import {
-  FONTS, BGS, ACCENTS, RATIOS,
-  PX_MIN, PX_MAX, PX_STEP, TRACK_MIN, TRACK_MAX, LINE_MIN, LINE_MAX
+  FONTS, BGS, ACCENTS, RATIOS, OVERLAY_SHAPES,
+  PX_MIN, PX_MAX, PX_STEP, TRACK_MIN, TRACK_MAX, LINE_MIN, LINE_MAX,
+  OV_MIN, OV_MAX, OV_DEFAULT
 } from './config.js';
 import { $, lsGet, lsSet } from './utils.js';
 import {
@@ -209,6 +210,21 @@ function buildStaticOptions() {
     });
     $('overlayGroup').appendChild(b);
   });
+  OVERLAY_SHAPES.forEach(function (o) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'seg-btn';
+    b.dataset.shape = o.key;
+    b.setAttribute('aria-label', '덮는 모양 ' + o.label);
+    var sw = document.createElement('span');           // 견본 배경은 render 에서 채운다
+    sw.className = 'ov-sw'; sw.setAttribute('aria-hidden', 'true');
+    var label = document.createElement('span');
+    label.textContent = o.label;
+    b.appendChild(sw); b.appendChild(label);
+    b.addEventListener('click', function () {
+      state.overlayShape = o.key; lsSet('sm_ovShape', o.key); render();
+    });
+    $('overlayShapeGroup').appendChild(b);
+  });
   ACCENTS.forEach(function (a) {
     var b = document.createElement('button');
     b.type = 'button'; b.className = 'accent-dot';
@@ -279,6 +295,16 @@ function bindEvents() {
   $('lineReset').addEventListener('click', function () {
     state.lineHeight = 1.5; lsSet('sm_lineh', '1.5'); render();
   });
+  $('ovRange').addEventListener('input', function (e) {
+    var v = parseFloat(e.target.value);
+    if (!isFinite(v)) return;
+    state.overlayStrength = Math.max(OV_MIN, Math.min(OV_MAX, Math.round(v)));
+    lsSet('sm_ovStrength', String(state.overlayStrength));
+    render();
+  });
+  $('ovReset').addEventListener('click', function () {
+    state.overlayStrength = OV_DEFAULT; lsSet('sm_ovStrength', String(OV_DEFAULT)); render();
+  });
   $('loadFontsBtn').addEventListener('click', loadLocalFonts);
   $('fontModeBtn').addEventListener('click', function () {
     fontUi.pickMode = fontUi.pickMode === 'list' ? 'type' : 'list';
@@ -335,6 +361,10 @@ function init() {
 
   var ov = lsGet('sm_overlay');
   if (ov === 'dark' || ov === 'light') state.overlayMode = ov;
+  var ovs = lsGet('sm_ovShape');
+  if (OVERLAY_SHAPES.some(function (o) { return o.key === ovs; })) state.overlayShape = ovs;
+  var ovStr = parseFloat(lsGet('sm_ovStrength'));
+  if (isFinite(ovStr) && ovStr >= OV_MIN && ovStr <= OV_MAX) state.overlayStrength = Math.round(ovStr);
   var rt = lsGet('sm_ratio');
   if (RATIOS[rt]) state.ratio = rt;
 
