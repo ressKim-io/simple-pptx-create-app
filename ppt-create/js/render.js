@@ -10,8 +10,8 @@ import { parseSlides, curPx, currentImage, overlayLayers } from './slides.js';
 
 /* ---------- 스크림 → CSS 그라데이션 (정지점은 slides.overlayLayers 가 계산) ---------- */
 function r3(n) { return Math.round(n * 1000) / 1000; }
-function overlayCss(shapeKey, strengthPct) {
-  var ov = overlayLayers(shapeKey, strengthPct);
+function overlayCss(shapeKey, strengthPct, centerPct) {
+  var ov = overlayLayers(shapeKey, strengthPct, centerPct);
   return ov.layers.map(function (L) {
     var stops = L.stops.map(function (st) {
       return 'rgba(' + ov.rgb + ',' + r3(st.a) + ') ' + r3(st.p * 100) + '%';
@@ -225,19 +225,29 @@ function renderOverlayBox() {
   selToggle(shapeGroup, '.seg-btn', 'shape', state.overlayShape);
   shapeGroup.querySelectorAll('.seg-btn').forEach(function (b) {
     var sw = b.querySelector('.ov-sw');
-    if (sw) sw.style.backgroundImage = overlayCss(b.dataset.shape, 92);
+    if (sw) sw.style.backgroundImage = overlayCss(b.dataset.shape, 92, 18);
   });
 
-  var s = state.overlayStrength;
+  var gradient = state.overlayShape !== 'full';
+  var s = state.overlayStrength, c = state.overlayCenter;
+  $('ovEdgeLab').textContent = gradient ? '끝' : '전체';
   $('ovRange').value = s;
   $('ovVal').textContent = s + '%';
-  $('ovDefault').hidden = s !== OV_DEFAULT;
-  $('ovReset').hidden = s === OV_DEFAULT;
+  $('ovCenterRow').hidden = !gradient;
+  // 가운데가 끝보다 진하면 그라데이션이 뒤집혀 보이므로 끝 값을 상한으로 둔다
+  $('ovCenterRange').max = s;
+  $('ovCenterRange').value = c;
+  $('ovCenterVal').textContent = c + '%';
+  var isDefault = s === OV_DEFAULT && c === 0;
+  $('ovDefault').hidden = !isDefault;
+  $('ovReset').hidden = isDefault;
 
   var light = state.overlayMode === 'light';
-  $('ovNote').textContent = state.overlayShape === 'full'
+  var color = light ? '흰색' : '검은색';
+  $('ovNote').textContent = !gradient
     ? '사진 전체를 ' + (light ? '밝게' : '어둡게') + ' 덮어요. 진하기를 올릴수록 글자가 잘 보이고, 사진은 덜 보여요.'
-    : '끝으로 갈수록 ' + (light ? '흰색' : '검은색') + '에 가까워지고 가운데는 사진이 그대로 보여요. 100%면 끝이 완전히 ' + (light ? '흰색' : '검은색') + '이에요.';
+    : '끝은 ' + s + '%(100%면 완전한 ' + color + '), 가운데는 ' + c + '%로 덮어요. '
+      + (c === 0 ? '가운데를 올리면 사진 원색 대신 살짝 ' + color + '이 남아요.' : '가운데도 살짝 ' + color + '이 돌아 글자가 잘 보여요.');
 }
 
 function renderImgChips() {

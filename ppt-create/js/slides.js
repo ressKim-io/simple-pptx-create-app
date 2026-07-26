@@ -73,21 +73,24 @@ function ramp(p0, a0, p1, a1) {
 // 반환: { rgb, layers:[{dir:'h'|'v', stops:[{p,a}]}] }
 // 층이 여러 개라도 색이 같아서 겹치는 순서와 무관하다 (알파만 누적).
 // 인자는 견본(모양 고르기 버튼)용 — 비우면 현재 설정.
-export function overlayLayers(shapeKey, strengthPct) {
+export function overlayLayers(shapeKey, strengthPct, centerPct) {
   var light = state.overlayMode === 'light';
-  var s = (strengthPct == null ? state.overlayStrength : strengthPct) / 100;
   // 밝은 스크림은 같은 알파라도 사진을 덜 가려서 조금 더 올린다 (기존 기본값 재현)
-  if (light) s = Math.min(1, s * 1.2);
+  var mul = light ? 1.2 : 1;
+  var s = Math.min(1, (strengthPct == null ? state.overlayStrength : strengthPct) / 100 * mul);
+  var c = Math.min(s, (centerPct == null ? state.overlayCenter : centerPct) / 100 * mul);
   var want = shapeKey || state.overlayShape;
   var shape = null;
   OVERLAY_SHAPES.forEach(function (o) { if (o.key === want) shape = o; });
   if (!shape) shape = OVERLAY_SHAPES[0];
   return {
     rgb: light ? OVERLAY_RGB.light : OVERLAY_RGB.dark,
-    layers: shape.layers.map(function (L) {
+    layers: shape.layers.map(function (L, i) {
+      // 가운데 최소 진하기는 첫 층에만 — 층마다 넣으면 겹쳐서 두 배로 진해진다
+      var mid = i === 0 ? c : 0;
       var stops = L.edge === null
         ? [{ p: 0, a: s * 0.7 }, { p: 1, a: s }]          // 전면: 위가 살짝 옅은 기존 스크림
-        : ramp(0, s, L.edge, 0).concat(ramp(1 - L.edge, 0, 1, s));
+        : ramp(0, s, L.edge, mid).concat(ramp(1 - L.edge, mid, 1, s));
       return { dir: L.dir, stops: stops };
     })
   };

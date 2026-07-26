@@ -23,6 +23,7 @@ export var state = {
   overlayMode: 'dark',           // 'dark' = 어두운 스크림+흰 글자, 'light' = 반대
   overlayShape: 'full',          // 스크림 모양: 'full' | 'sides' | 'updown' | 'edges' (config.OVERLAY_SHAPES)
   overlayStrength: OV_DEFAULT,   // 스크림 진하기 0~100 (가장자리 모양이면 끝의 진하기)
+  overlayCenter: 0,              // 가운데에 남기는 최소 진하기 0~100 (0 = 사진 원색 그대로)
   fontPx: null,                  // 글자 크기(px, 내보내기 기준). null = 자동 맞춤
   letterSpacing: 0,              // 자간: 글자 크기 대비 % (-5 ~ +5, 0.1 단위)
   lineHeight: 1.5,               // 줄 간격 배수 (1.0 ~ 2.5)

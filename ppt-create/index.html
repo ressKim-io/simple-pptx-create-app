@@ -136,8 +136,14 @@
             <button type="button" id="ovReset" class="link-btn" hidden>기본으로</button>
           </div>
           <div class="slider-row">
+            <span id="ovEdgeLab" class="ov-lab">끝</span>
             <input type="range" id="ovRange" min="0" max="100" step="5" value="60" aria-label="덮개 진하기(퍼센트)">
             <div id="ovVal" aria-live="polite" class="slider-val">60%</div>
+          </div>
+          <div class="slider-row" id="ovCenterRow" hidden>
+            <span class="ov-lab">가운데</span>
+            <input type="range" id="ovCenterRange" min="0" max="100" step="5" value="0" aria-label="가운데에 남기는 덮개 진하기(퍼센트)">
+            <div id="ovCenterVal" aria-live="polite" class="slider-val">0%</div>
           </div>
           <div id="ovNote" class="scale-note"></div>
         </div>

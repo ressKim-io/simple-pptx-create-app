@@ -133,6 +133,8 @@ button:disabled{opacity:.4;cursor:default;pointer-events:none}
 .seg-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .seg-grid .seg-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:auto;padding:8px 4px}
 .ov-sw{width:38px;height:22px;border-radius:5px;background-color:#8C9099;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.ov-lab{flex:none;width:38px;font-size:11.5px;font-weight:700;color:var(--muted)}
+#ovCenterRow{margin-top:6px}
 .accent-row{display:flex;flex-wrap:wrap;gap:11px}
 .accent-dot{width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.18);transition:transform .12s}
 @media (hover:hover){.accent-dot:hover{transform:scale(1.08)}}

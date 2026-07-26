@@ -299,11 +299,25 @@ function bindEvents() {
     var v = parseFloat(e.target.value);
     if (!isFinite(v)) return;
     state.overlayStrength = Math.max(OV_MIN, Math.min(OV_MAX, Math.round(v)));
+    // 끝을 낮추면 가운데도 같이 내려간다 (가운데가 더 진하면 그라데이션이 뒤집힌다)
+    if (state.overlayCenter > state.overlayStrength) {
+      state.overlayCenter = state.overlayStrength;
+      lsSet('sm_ovCenter', String(state.overlayCenter));
+    }
     lsSet('sm_ovStrength', String(state.overlayStrength));
     render();
   });
+  $('ovCenterRange').addEventListener('input', function (e) {
+    var v = parseFloat(e.target.value);
+    if (!isFinite(v)) return;
+    state.overlayCenter = Math.max(OV_MIN, Math.min(state.overlayStrength, Math.round(v)));
+    lsSet('sm_ovCenter', String(state.overlayCenter));
+    render();
+  });
   $('ovReset').addEventListener('click', function () {
-    state.overlayStrength = OV_DEFAULT; lsSet('sm_ovStrength', String(OV_DEFAULT)); render();
+    state.overlayStrength = OV_DEFAULT; state.overlayCenter = 0;
+    lsSet('sm_ovStrength', String(OV_DEFAULT)); lsSet('sm_ovCenter', '0');
+    render();
   });
   $('loadFontsBtn').addEventListener('click', loadLocalFonts);
   $('fontModeBtn').addEventListener('click', function () {
@@ -365,6 +379,8 @@ function init() {
   if (OVERLAY_SHAPES.some(function (o) { return o.key === ovs; })) state.overlayShape = ovs;
   var ovStr = parseFloat(lsGet('sm_ovStrength'));
   if (isFinite(ovStr) && ovStr >= OV_MIN && ovStr <= OV_MAX) state.overlayStrength = Math.round(ovStr);
+  var ovCen = parseFloat(lsGet('sm_ovCenter'));
+  if (isFinite(ovCen) && ovCen >= OV_MIN) state.overlayCenter = Math.min(state.overlayStrength, Math.round(ovCen));
   var rt = lsGet('sm_ratio');
   if (RATIOS[rt]) state.ratio = rt;
 
