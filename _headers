@@ -1,20 +1,36 @@
 # Cloudflare Pages 캐시 규칙 (배포 루트가 저장소 루트일 때 적용)
 #
-# ES 모듈은 파일 단위로 캐시된다. 일부만 옛 파일이 남으면 "미리보기는 새 기능,
-# 내보내기는 옛 동작" 처럼 앞뒤가 안 맞는 상태가 되고 오류도 안 뜬다.
-# no-cache = 매번 서버에 확인(대부분 304, 용량 거의 안 씀) → 항상 같은 판이 돈다.
+# ES 모듈은 파일 단위로 캐시된다. 일부만 옛 파일이면 "미리보기는 새 기능,
+# 내보내기는 옛 동작" 처럼 앞뒤가 안 맞고 오류도 안 뜬다.
+#
+# Cache-Control      = 브라우저용. no-cache = 매번 확인(대부분 304, 용량 거의 안 씀)
+# CDN-Cache-Control  = 엣지용. 실제로 2026-07-26 배포 직후 config.js 는 새 파일인데
+#                      render.js 는 cf-cache-status: HIT 로 옛 파일이 나갔다. 엣지가
+#                      파일마다 따로 넘어가서 생기는 문제라 JS/CSS 는 아예 안 재우고
+#                      매번 Pages 원본(=현재 배포본)에서 가져오게 한다. 파일이 작아
+#                      비용도 거의 없다.
 
 /ppt-create/js/*
   Cache-Control: no-cache
+  CDN-Cache-Control: no-store
+  Cloudflare-CDN-Cache-Control: no-store
 
 /ppt-create/css/*
   Cache-Control: no-cache
+  CDN-Cache-Control: no-store
+  Cloudflare-CDN-Cache-Control: no-store
 
 /ppt-create/presets.json
   Cache-Control: no-cache
+  CDN-Cache-Control: no-store
+  Cloudflare-CDN-Cache-Control: no-store
 
 /js/*
   Cache-Control: no-cache
+  CDN-Cache-Control: no-store
+  Cloudflare-CDN-Cache-Control: no-store
 
 /css/*
   Cache-Control: no-cache
+  CDN-Cache-Control: no-store
+  Cloudflare-CDN-Cache-Control: no-store
