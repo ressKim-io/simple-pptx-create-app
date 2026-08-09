@@ -183,7 +183,8 @@ function buildStaticOptions() {
     var b = document.createElement('button');
     b.type = 'button'; b.className = 'seg-btn';
     b.dataset.ratio = r;
-    b.textContent = r;
+    b.textContent = RATIOS[r].label || r;   // 키가 곧 이름이지만 '4:3 와이드'처럼 다른 것도 있다
+    if (RATIOS[r].note) b.title = RATIOS[r].note;
     b.addEventListener('click', function () { state.ratio = r; lsSet('sm_ratio', r); render(); });
     $('ratioGroup').appendChild(b);
   });

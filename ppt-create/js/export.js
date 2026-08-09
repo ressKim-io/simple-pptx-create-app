@@ -6,7 +6,7 @@ import { BGS, RATIOS } from './config.js';
 import { $, timeout, hex6, xmlAttr, MIME, pickSaveHandle, saveBlob, lsSet } from './utils.js';
 import { state } from './state.js';
 import { curFont, ensureFont } from './fonts.js';
-import { parseSlides, curPx, getBgImage, overlayLayers } from './slides.js';
+import { parseSlides, curPx, getBgImage, overlayLayers, designW, stretchX } from './slides.js';
 import { renderModal } from './render.js';
 
 var PptxGenJS = window.ChoirLibs.PptxGenJS;
@@ -66,26 +66,37 @@ function wrapLine(ctx, text, maxW) {
   if (cur) lines.push(cur);
   return lines;
 }
-function renderSlideExport(ctx, W, H, lines, bgImg) {
+function drawSlideBg(ctx, W, H, bgImg) {
   ctx.clearRect(0, 0, W, H);
-  var lightMode = state.overlayMode === 'light';
   if (bgImg) {
-    drawCover(ctx, bgImg, W, H);
-    drawOverlay(ctx, W, H);
+    // 4:3 와이드: 사진도 4:3 폭으로 채운 뒤 같이 늘려야 투사할 때 원래 비율로 돌아온다
+    ctx.save();
+    ctx.scale(stretchX(), 1);
+    drawCover(ctx, bgImg, designW(), H);
+    ctx.restore();
+    drawOverlay(ctx, W, H);   // 정지점이 전부 비율값이라 늘려도 결과가 같다
   } else {
     ctx.fillStyle = (BGS[state.bgKey] || BGS.white).bg;
     ctx.fillRect(0, 0, W, H);
   }
+}
+// 글자만 그린다 (배경은 지우지 않는다) — PPTX 는 투명 글자 그림이 따로 필요해서 분리
+function drawSlideText(ctx, H, lines, imgOn) {
+  var lightMode = state.overlayMode === 'light';
   var f = curFont();
   var px = curPx();
   var lh = px * state.lineHeight;
+  // 4:3 와이드는 4:3 폭(DW)에 글을 앉힌 뒤 좌우로만 늘린다. 글자 크기(세로)는 그대로다.
+  var DW = designW();
+  ctx.save();
+  ctx.scale(stretchX(), 1);
   ctx.font = f.weight + ' ' + px + 'px ' + f.cssName + f.fb;
   // 자간: Chromium 계열이면 캔버스에도 그대로 적용 (미지원 브라우저는 무시)
   if ('letterSpacing' in ctx) ctx.letterSpacing = (px * state.letterSpacing / 100) + 'px';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = exportInk(!!bgImg);
-  if (bgImg) {
+  ctx.fillStyle = exportInk(imgOn);
+  if (imgOn) {
     if (lightMode) {
       ctx.shadowColor = 'rgba(255,255,255,.55)';
       ctx.shadowBlur = px * 0.25;
@@ -96,7 +107,7 @@ function renderSlideExport(ctx, W, H, lines, bgImg) {
       ctx.shadowOffsetY = px * 2 / 32;
     }
   }
-  var maxW = W * 0.86;
+  var maxW = DW * 0.86;
   var out = [];
   lines.forEach(function (line) {
     wrapLine(ctx, line, maxW).forEach(function (l) { out.push(l); });
@@ -104,12 +115,14 @@ function renderSlideExport(ctx, W, H, lines, bgImg) {
   var total = out.length * lh;
   var y = H / 2 - total / 2 + lh / 2;
   out.forEach(function (l) {
-    ctx.fillText(l, W / 2, y);
+    ctx.fillText(l, DW / 2, y);
     y += lh;
   });
-  ctx.shadowColor = 'transparent';
-  ctx.shadowBlur = 0;
-  ctx.shadowOffsetY = 0;
+  ctx.restore();
+}
+function renderSlideExport(ctx, W, H, lines, bgImg) {
+  drawSlideBg(ctx, W, H, bgImg);
+  drawSlideText(ctx, H, lines, !!bgImg);
 }
 
 /* ---------- 내보내기 파이프라인 ---------- */
@@ -316,23 +329,44 @@ export async function exportPPTX(slides, handle, base) {
   pptx.title = base.replace(/[&<>"']/g, '');   // core.xml 에 그대로 들어가므로 XML 깨질 문자 제거
   pptx.defineLayout({ name: 'CH', width: R.inW, height: R.inH });
   pptx.layout = 'CH';
-  // 이미지 배경은 오버레이까지 미리 합성한 한 장으로 (텍스트는 편집 가능하게 유지)
+  // 이미지 배경은 오버레이까지 미리 합성한 한 장으로 (글자는 아래에서 따로 얹는다)
   var bgData = null;
   if (bg) {
     var cv = document.createElement('canvas');
     cv.width = R.w; cv.height = R.h;
     var ctx = cv.getContext('2d');
-    drawCover(ctx, bg, R.w, R.h);
-    drawOverlay(ctx, R.w, R.h);
+    drawSlideBg(ctx, R.w, R.h, bg);
     bgData = cv.toDataURL('image/jpeg', 0.9);
   }
   var fontPt = Math.round(curPx() / 2);   // 1080px = 540pt → px/pt = 2
   var charSpc = Math.round(fontPt * state.letterSpacing / 100 * 100) / 100;  // 자간(pt)
   var ink = exportInk(!!bg);
+
+  // 4:3 와이드는 글자를 좌우로 늘려야 하는데, 파워포인트(OOXML)에는 글자 가로 배율이
+  // 아예 없다 — 도형을 늘려도 글자는 안 늘어난다. 그래서 이 모드에서만 글자를 투명 PNG로
+  // 구워 배경 위에 얹는다 (배경은 그대로 한 장짜리 그림/색이라 파일이 크게 늘지 않는다).
+  var textCv = null, textCtx = null;
+  if (stretchX() !== 1) {
+    textCv = document.createElement('canvas');
+    textCv.width = R.w; textCv.height = R.h;
+    textCtx = textCv.getContext('2d');
+  }
+
   for (var i = 0; i < slides.length; i++) {
     var s = pptx.addSlide();
     if (bgData) s.addImage({ data: bgData, x: 0, y: 0, w: R.inW, h: R.inH });
     else s.background = { color: hex6((BGS[state.bgKey] || BGS.white).bg) };
+    if (textCtx) {
+      textCtx.clearRect(0, 0, R.w, R.h);
+      drawSlideText(textCtx, R.h, slides[i].lines, !!bg);
+      s.addImage({
+        data: textCv.toDataURL('image/png'), x: 0, y: 0, w: R.inW, h: R.inH,
+        altText: slides[i].lines.join(' ')   // 글자가 그림이라 최소한 검색·읽어주기는 되게
+      });
+      setPct((i + 1) / slides.length * 60);
+      await timeout(0);
+      continue;
+    }
     var opts = {
       // 좌우 7% 여백 = 미리보기(.lyrics 7cqw)·PNG 캔버스(maxW 0.86W)와 같은 줄바꿈 폭.
       // margin:0 — 텍스트 상자 기본 내부 여백(0.1in)까지 없애야 폭이 정확히 86%가 된다.

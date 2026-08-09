@@ -6,7 +6,7 @@ import { BGS, PVW, PV_ASPECT, RATIOS, PX_MIN, PX_MAX, OV_DEFAULT } from './confi
 import { $, hexA, lsSet } from './utils.js';
 import { state, presets, fontUi, removeImage } from './state.js';
 import { curFont, missingFontName } from './fonts.js';
-import { parseSlides, curPx, currentImage, overlayLayers } from './slides.js';
+import { parseSlides, curPx, currentImage, overlayLayers, stretchX } from './slides.js';
 
 /* ---------- 스크림 → CSS 그라데이션 (정지점은 slides.overlayLayers 가 계산) ---------- */
 function r3(n) { return Math.round(n * 1000) / 1000; }
@@ -91,11 +91,22 @@ function renderPreview(slides, cur) {
 
   // 미리보기 cqw = 내보내기 px ÷ 내보내기 가로폭 × 100 (미리보기와 파일이 동일 비율)
   var lyricSize = curPx() / RATIOS[state.ratio].w * 100;
+  // 4:3 와이드: 4:3 폭(=1/sx)으로 배치해 줄을 바꾼 뒤 scaleX 로 늘려 16:9를 채운다.
+  // 글자 크기(세로)는 transform 이 건드리지 않으므로 위 cqw 값 그대로면 된다.
+  var sx = stretchX();
+  var pct = function (v) { return Math.round(v * 1e4) / 1e4 + '%'; };
 
   $('slideBgImg').hidden = !imgOn;
   $('slideOverlay').hidden = !imgOn;
   if (imgOn) {
-    $('slideBgImg').style.background = 'url(' + JSON.stringify(img.url) + ') center/cover no-repeat';
+    var bgEl = $('slideBgImg');
+    bgEl.style.background = 'url(' + JSON.stringify(img.url) + ') center/cover no-repeat';
+    // 사진도 4:3으로 채운 뒤 같이 늘려야 투사할 때 원래 비율로 돌아온다
+    bgEl.style.left = pct(50 - 50 / sx);
+    bgEl.style.right = 'auto';
+    bgEl.style.width = pct(100 / sx);
+    bgEl.style.transform = sx === 1 ? 'none' : 'scaleX(' + sx + ')';
+    // 덮개는 정지점이 전부 비율값이라 늘려도 결과가 같다 → 그대로 전체에 깐다
     $('slideOverlay').style.background = overlayCss();
   }
   $('emptyMsg').hidden = cur.lines.length !== 0;
@@ -107,6 +118,9 @@ function renderPreview(slides, cur) {
     d.textContent = l;
     box.appendChild(d);
   });
+  box.style.width = pct(100 / sx);
+  box.style.padding = '6cqh ' + (Math.round(7 / sx * 1e4) / 1e4) + 'cqw';
+  box.style.transform = sx === 1 ? 'none' : 'scaleX(' + sx + ')';
   box.style.fontSize = lyricSize + 'cqw';
   box.style.letterSpacing = (state.letterSpacing / 100) + 'em';
   box.style.lineHeight = String(state.lineHeight);
@@ -157,6 +171,9 @@ function selToggle(container, selector, attr, value) {
 
 function renderControls() {
   selToggle($('ratioGroup'), '.seg-btn', 'ratio', state.ratio);
+  var rNote = RATIOS[state.ratio].note;
+  $('ratioNote').hidden = !rNote;
+  $('ratioNote').textContent = rNote || '';
   selToggle($('bgChips'), '.bg-chip', 'bg', state.bgKey);
   renderImgChips();
   var imgOn = !!currentImage();
@@ -216,8 +233,16 @@ function renderControls() {
   var miss = missingFontName();
   var warn = $('cfWarn');
   warn.hidden = !miss;
-  if (miss) warn.textContent = '‘' + miss + '’ 글꼴이 이 컴퓨터에 없어요. 미리보기와 PNG는 기본 글꼴로 나와요. (PPTX에는 이 이름 그대로 저장되니, 파일을 열 컴퓨터에 이 글꼴이 있으면 제대로 보여요.)';
+  if (miss) {
+    warn.textContent = '‘' + miss + '’ 글꼴이 이 컴퓨터에 없어요. ' + (pptxTextIsImage()
+      ? '미리보기와 저장 파일(PNG·PPTX) 모두 기본 글꼴로 나와요.'
+      : '미리보기와 PNG는 기본 글꼴로 나와요. (PPTX에는 이 이름 그대로 저장되니, 파일을 열 컴퓨터에 이 글꼴이 있으면 제대로 보여요.)');
+  }
 }
+
+// 4:3 와이드는 PPTX 글자도 그림으로 구워 넣는다 → 글꼴 이름만 넘기는 게 아니라
+// 지금 이 컴퓨터의 글꼴로 그려진 결과가 파일에 박힌다 (안내 문구가 달라진다)
+function pptxTextIsImage() { return stretchX() !== 1; }
 
 /* 덮개(스크림) — 모양 견본은 실제 그라데이션으로, 진하기는 슬라이더로 */
 function renderOverlayBox() {
@@ -317,5 +342,9 @@ export function renderModal() {
   var miss = missingFontName();
   var w = $('exFontWarn');
   w.hidden = !miss;
-  if (miss) w.textContent = '‘' + miss + '’ 글꼴이 이 컴퓨터에 없어요. PNG는 기본 글꼴로 저장됩니다. (PPTX는 이 이름으로 저장돼요.)';
+  if (miss) {
+    w.textContent = '‘' + miss + '’ 글꼴이 이 컴퓨터에 없어요. ' + (pptxTextIsImage()
+      ? 'PNG·PPTX 모두 기본 글꼴로 저장됩니다.'
+      : 'PNG는 기본 글꼴로 저장됩니다. (PPTX는 이 이름으로 저장돼요.)');
+  }
 }

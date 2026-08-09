@@ -20,6 +20,20 @@ export function parseSlides(text) {
   return slides.map(function (lines) { return { lines: lines }; });
 }
 
+/* ---------- 화면을 '짜는' 크기 ----------
+   보통은 내보내기 크기와 같지만 '4:3 와이드'만 다르다: 4:3(designW)으로 짠 뒤
+   좌우로만 stretchX 배 늘려 16:9로 내보낸다. 그래서 가로 치수(줄바꿈 폭, 사진 채우기,
+   글자 가로 폭)는 designW 기준으로 재고 마지막에 stretchX 를 곱하며,
+   세로 치수(글자 크기·줄 간격)는 늘리지 않는다. */
+export function designW(ratio) {
+  var R = RATIOS[ratio || state.ratio];
+  return R.dw || R.w;
+}
+export function stretchX(ratio) {
+  var R = RATIOS[ratio || state.ratio];
+  return R.sx || 1;
+}
+
 /* ---------- 글자 크기 ---------- */
 // 비율당 자동 폰트 크기(cqw) — "4줄이 꽉 차는" 기본값
 export function fixedSize(ratio) {
@@ -29,7 +43,7 @@ export function fixedSize(ratio) {
 }
 // 자동 크기를 내보내기 px(세로 1080px 캔버스 기준)로 환산
 export function autoPx() {
-  return Math.round(RATIOS[state.ratio].w * fixedSize(state.ratio) / 100);
+  return Math.round(designW() * fixedSize(state.ratio) / 100);
 }
 // 현재 적용 글자 크기(px). fontPx 미설정이면 자동값
 export function curPx() {
